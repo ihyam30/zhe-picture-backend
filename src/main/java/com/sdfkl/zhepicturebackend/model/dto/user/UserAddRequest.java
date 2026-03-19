@@ -1,9 +1,8 @@
-package com.sdfkl.zhepicturebackend.model.dto;
+package com.sdfkl.zhepicturebackend.model.dto.user;
 
 import lombok.Data;
 
 import java.io.Serializable;
-import java.util.Date;
 
 @Data
 public class UserAddRequest implements Serializable {

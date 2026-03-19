@@ -1,0 +1,63 @@
+package com.sdfkl.zhepicturebackend.service;
+
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.sdfkl.zhepicturebackend.model.dto.picture.PictureQueryRequest;
+import com.sdfkl.zhepicturebackend.model.dto.picture.PictureUploadRequest;
+import com.sdfkl.zhepicturebackend.model.entity.Picture;
+import com.baomidou.mybatisplus.extension.service.IService;
+import com.sdfkl.zhepicturebackend.model.entity.User;
+import com.sdfkl.zhepicturebackend.model.vo.PictureVO;
+import org.springframework.web.multipart.MultipartFile;
+
+import javax.servlet.http.HttpServletRequest;
+
+/**
+ * @author user
+ * @description 针对表【picture(图片)】的数据库操作Service
+ * @createDate 2026-03-19 19:11:30
+ */
+public interface PictureService extends IService<Picture> {
+    /**
+     * 上传图片
+     *
+     * @param multipartFile        图片
+     * @param pictureUploadRequest 图片信息
+     * @param loginUser            登录用户
+     * @return 图片信息
+     */
+    PictureVO uploadPicture(MultipartFile multipartFile, PictureUploadRequest pictureUploadRequest, User loginUser);
+
+    /**
+     * 获取查询条件
+     *
+     * @param pictureQueryRequest 图片查询条件
+     * @return 查询条件
+     */
+    QueryWrapper<Picture> getQueryWrapper(PictureQueryRequest pictureQueryRequest);
+
+    /**
+     * 获取图片信息
+     *
+     * @param picture 图片
+     * @param request 请求
+     * @return 图片信息
+     */
+    PictureVO getPictureVO(Picture picture, HttpServletRequest request);
+
+    /**
+     * 获取图片分页信息
+     *
+     * @param picturePage 图片分页
+     * @param request     请求
+     * @return 图片分页信息
+     */
+    Page<PictureVO> getPictureVOPage(Page<Picture> picturePage, HttpServletRequest request);
+
+    /**
+     * 校验图片信息
+     *
+     * @param picture 图片信息
+     */
+    void validPicture(Picture picture);
+}

@@ -11,9 +11,9 @@ import com.sdfkl.zhepicturebackend.constant.UserConstant;
 import com.sdfkl.zhepicturebackend.exception.BusinessException;
 import com.sdfkl.zhepicturebackend.exception.ErrorCode;
 import com.sdfkl.zhepicturebackend.exception.ThrowUtils;
-import com.sdfkl.zhepicturebackend.model.dto.UserLoginRequest;
-import com.sdfkl.zhepicturebackend.model.dto.UserQueryRequest;
-import com.sdfkl.zhepicturebackend.model.dto.UserRegisterRequest;
+import com.sdfkl.zhepicturebackend.model.dto.user.UserLoginRequest;
+import com.sdfkl.zhepicturebackend.model.dto.user.UserQueryRequest;
+import com.sdfkl.zhepicturebackend.model.dto.user.UserRegisterRequest;
 import com.sdfkl.zhepicturebackend.model.entity.User;
 import com.sdfkl.zhepicturebackend.model.enums.UserRoleEnum;
 import com.sdfkl.zhepicturebackend.model.vo.UserLoginVO;
@@ -202,6 +202,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     public String getEncryptPassword(String userPassword) {
         final String SALT = "sdfkl-xiaozhe";
         return DigestUtils.md5DigestAsHex((SALT + Arrays.toString(userPassword.getBytes())).getBytes());
+    }
+
+    @Override
+    public boolean isAdmin(User user) {
+        if (user == null) return false;
+        return !UserRoleEnum.ADMIN.getValue().equals(user.getUserRole());
     }
 }
 
