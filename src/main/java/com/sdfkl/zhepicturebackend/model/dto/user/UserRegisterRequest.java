@@ -1,4 +1,4 @@
-package com.sdfkl.zhepicturebackend.model.dto;
+package com.sdfkl.zhepicturebackend.model.dto.user;
 
 import lombok.Data;
 

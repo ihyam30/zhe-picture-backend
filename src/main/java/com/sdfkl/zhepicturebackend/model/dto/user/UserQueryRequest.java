@@ -1,11 +1,14 @@
-package com.sdfkl.zhepicturebackend.model.dto;
+package com.sdfkl.zhepicturebackend.model.dto.user;
 
+import com.sdfkl.zhepicturebackend.common.PageRequest;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.io.Serializable;
 
+@EqualsAndHashCode(callSuper = true)
 @Data
-public class UserUpdateRequest implements Serializable {
+public class UserQueryRequest extends PageRequest implements Serializable {
     /**
      * id
      */
@@ -16,9 +19,9 @@ public class UserUpdateRequest implements Serializable {
     private String userName;
 
     /**
-     * 用户头像
+     * 账号
      */
-    private String userAvatar;
+    private String userAccount;
 
     /**
      * 用户简介

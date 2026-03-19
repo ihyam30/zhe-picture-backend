@@ -1,10 +1,9 @@
 package com.sdfkl.zhepicturebackend.service;
 
-import cn.hutool.http.server.HttpServerRequest;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.sdfkl.zhepicturebackend.model.dto.UserLoginRequest;
-import com.sdfkl.zhepicturebackend.model.dto.UserQueryRequest;
-import com.sdfkl.zhepicturebackend.model.dto.UserRegisterRequest;
+import com.sdfkl.zhepicturebackend.model.dto.user.UserLoginRequest;
+import com.sdfkl.zhepicturebackend.model.dto.user.UserQueryRequest;
+import com.sdfkl.zhepicturebackend.model.dto.user.UserRegisterRequest;
 import com.sdfkl.zhepicturebackend.model.entity.User;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.sdfkl.zhepicturebackend.model.vo.UserLoginVO;
@@ -75,5 +74,16 @@ public interface UserService extends IService<User> {
      */
     QueryWrapper<User> getQueryWrapper(UserQueryRequest userQueryRequest);
 
+    /**
+     * 获取加密后的密码
+     */
     String getEncryptPassword(String userPassword);
+
+    /**
+     * 是否为管理员
+     *
+     * @param user 用户
+     * @return 是否为管理员
+     */
+    boolean isAdmin(User user);
 }
