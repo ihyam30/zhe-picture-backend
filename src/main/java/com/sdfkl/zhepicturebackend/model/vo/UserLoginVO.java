@@ -1,18 +1,22 @@
-package com.sdfkl.zhepicturebackend.model.entity;
+package com.sdfkl.zhepicturebackend.model.vo;
 
-import com.baomidou.mybatisplus.annotation.*;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableLogic;
+import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.Data;
 
 import java.io.Serializable;
 import java.util.Date;
-import lombok.Data;
 
 /**
  * 用户
+ *
  * @TableName user
  */
-@TableName(value ="user")
+@TableName(value = "user")
 @Data
-public class User implements Serializable {
+public class UserLoginVO implements Serializable {
 
     private static final long serialVersionUID = 7660034417259743373L;
     /**
@@ -26,10 +30,6 @@ public class User implements Serializable {
      */
     private String userAccount;
 
-    /**
-     * 密码
-     */
-    private String userPassword;
 
     /**
      * 用户昵称
@@ -65,12 +65,5 @@ public class User implements Serializable {
      * 更新时间
      */
     private Date updateTime;
-
-    /**
-     * 是否删除
-     */
-    @TableLogic
-    private Integer isDelete;
-
 
 }
