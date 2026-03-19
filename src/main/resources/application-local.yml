@@ -1,8 +1,0 @@
-#对象存储配置
-cos:
-  client:
-    host: https://zhe-1412516181.cos.ap-guangzhou.myqcloud.com
-    secretId: AKIDQnyx195pNkvypTxEKDuRnW2NZZPBUdbS
-    secretKey: hASRvISRROjvuiKk0CMYcYXP8kCRWUUU
-    region: ap-guangzhou
-    bucket: zhe-1412516181
