@@ -2,13 +2,14 @@ package com.sdfkl.zhepicturebackend.model.dto;
 
 import lombok.Data;
 
-@Data
-public class UserUpdateRequest {
-    /**
-     * 账号
-     */
-    private String userAccount;
+import java.io.Serializable;
 
+@Data
+public class UserUpdateRequest implements Serializable {
+    /**
+     * id
+     */
+    private Long id;
     /**
      * 用户昵称
      */

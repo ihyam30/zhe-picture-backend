@@ -1,17 +1,22 @@
-package generator.domain;
+package com.sdfkl.zhepicturebackend.model.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
 
+import java.io.Serializable;
 import java.util.Date;
+
 import lombok.Data;
 
 /**
  * 用户
+ *
  * @TableName user
  */
-@TableName(value ="user")
+@TableName(value = "user")
 @Data
-public class User {
+public class User implements Serializable {
+
+    private static final long serialVersionUID = 7660034417259743373L;
     /**
      * id
      */
@@ -68,4 +73,6 @@ public class User {
      */
     @TableLogic
     private Integer isDelete;
+
+
 }

@@ -34,6 +34,39 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <!--mybatis-plus:https://baomidou.com/getting-started-->
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-boot-starter</artifactId>
+        </dependency>
+        <!--knife4j:https://doc.xiaominfo.com/docs/quick-start-->
+        <dependency>
+            <groupId>com.github.xiaoymin</groupId>
+            <artifactId>knife4j-openapi2-spring-boot-starter</artifactId>
+            <version>4.4.0</version>
+        </dependency>
+        <!--hutool:https://hutool.cn/-->
+        <dependency>
+            <groupId>cn.hutool</groupId>
+            <artifactId>hutool-all</artifactId>
+            <version>5.8.44</version>
+        </dependency>
+        <!--aop:https://zhuanlan.zhihu.com/p/351468451-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+        </dependency>
+        <!-- jdk 8+ 引入可选模块 -->
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-jsqlparser-4.9</artifactId>
+        </dependency>
+        <!--COS 对象存储:https://cloud.tencent.com/document/product/436/10199#1dae6076-89af-479d-89b6-b9ce3fd693ee-->
+        <dependency>
+            <groupId>com.qcloud</groupId>
+            <artifactId>cos_api</artifactId>
+            <version>5.6.227</version>
+        </dependency>
     </dependencies>
     <dependencyManagement>
         <dependencies>
@@ -41,6 +74,13 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
                 <version>${spring-boot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.baomidou</groupId>
+                <artifactId>mybatis-plus-bom</artifactId>
+                <version>3.5.9</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
