@@ -1,9 +1,12 @@
 package com.sdfkl.zhepicturebackend.controller;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.util.RandomUtil;
 import cn.hutool.http.server.HttpServerRequest;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import com.qcloud.cos.model.COSObject;
 import com.qcloud.cos.model.COSObjectInputStream;
 import com.qcloud.cos.utils.IOUtils;
@@ -26,6 +29,9 @@ import com.sdfkl.zhepicturebackend.service.PictureService;
 import com.sdfkl.zhepicturebackend.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.AutoConfigurationPackage;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.util.DigestUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -34,9 +40,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @RestController
 @RequestMapping("/picture")
@@ -47,6 +55,18 @@ public class PictureController {
 
     @Resource
     private PictureService pictureService;
+
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
+
+    /**
+     * 本地缓存
+     */
+    private final Cache<String, String> LOCAL_CACHE = Caffeine.newBuilder()
+            .initialCapacity(1024)
+            .maximumSize(10_000)
+            .expireAfterWrite(Duration.ofMinutes(5))
+            .build();
 
     /**
      * 图片上传
@@ -104,6 +124,7 @@ public class PictureController {
         }
         boolean result = pictureService.removeById(id);
         ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
+        pictureService.clearPictureFile(oldPicture);
         return ResultUtils.success(true);
     }
 
@@ -203,6 +224,55 @@ public class PictureController {
         // 查询数据库
         Page<Picture> picturePage = pictureService.page(new Page<>(current, pageSize), pictureService.getQueryWrapper(pictureQueryRequest));
         return ResultUtils.success(pictureService.getPictureVOPage(picturePage,request));
+    }
+
+    /**
+     * 图片查询
+     *
+     * @param pictureQueryRequest 图片查询请求
+     * @return 图片信息
+     */
+    @PostMapping("/list/page/vo/cache")
+    public BaseResponse<Page<PictureVO>> listPictureVOByPageWithCache(@RequestBody PictureQueryRequest pictureQueryRequest, HttpServletRequest request){
+        long current = pictureQueryRequest.getCurrent();
+        long pageSize = pictureQueryRequest.getPageSize();
+        // 限制爬虫
+        ThrowUtils.throwIf(pageSize > 20, ErrorCode.PARAMS_ERROR);
+        // 普通用户默认只能看到审核通过的数据
+        pictureQueryRequest.setReviewStatus(PictureReviewStatusEnum.PASS.getValue());
+        // 查询构造，缓存中没有，在查询数据库
+        // 构造缓存的 key
+        String queryCondition = JSONUtil.toJsonStr(pictureQueryRequest);
+        String hashKey = DigestUtils.md5DigestAsHex(queryCondition.getBytes());
+        String redisKey = String.format("zhepicture:listPictureVOByPage:%s", hashKey);
+        // 先从本地缓存中查询数据
+        String cacheValue = LOCAL_CACHE.getIfPresent(redisKey);
+        if (cacheValue != null) {
+            // 如果缓存命中，缓存结果
+            Page<PictureVO> cachePage = JSONUtil.toBean(cacheValue, Page.class);
+            return ResultUtils.success(cachePage);
+        }
+        // 再从 redis 分布式缓存中查询数据
+        ValueOperations<String, String> stringStringValueOperations = stringRedisTemplate.opsForValue();
+        cacheValue = stringStringValueOperations.get(redisKey);
+        if (cacheValue != null) {
+            // 如果缓存命中，缓存结果
+            Page<PictureVO> cachePage = JSONUtil.toBean(cacheValue, Page.class);
+            // 将查询到的数据保存到本地缓存中
+            LOCAL_CACHE.put(redisKey,cacheValue);
+            return ResultUtils.success(cachePage);
+        }
+        // 查询数据库
+        Page<Picture> picturePage = pictureService.page(new Page<>(current, pageSize), pictureService.getQueryWrapper(pictureQueryRequest));
+        Page<PictureVO> pictureVOPage = pictureService.getPictureVOPage(picturePage, request);
+        // 将数据库中的数据缓存到 redis 中
+        String redisValue = JSONUtil.toJsonStr(pictureVOPage);
+        // 设置缓存过期时间
+        long timeout = 300 + RandomUtil.randomInt(0, 300);
+        stringStringValueOperations.set(redisKey,redisValue,timeout, TimeUnit.SECONDS);
+        // 将数据库查询到的数据保存到本地缓存中
+        LOCAL_CACHE.put(redisKey,redisValue);
+        return ResultUtils.success(pictureVOPage);
     }
 
     /**
