@@ -2,10 +2,8 @@ package com.sdfkl.zhepicturebackend.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.sdfkl.zhepicturebackend.model.dto.picture.PictureQueryRequest;
-import com.sdfkl.zhepicturebackend.model.dto.picture.PictureReviewRequest;
-import com.sdfkl.zhepicturebackend.model.dto.picture.PictureUploadByBatchRequest;
-import com.sdfkl.zhepicturebackend.model.dto.picture.PictureUploadRequest;
+import com.sdfkl.zhepicturebackend.common.DeleteRequest;
+import com.sdfkl.zhepicturebackend.model.dto.picture.*;
 import com.sdfkl.zhepicturebackend.model.entity.Picture;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.sdfkl.zhepicturebackend.model.entity.User;
@@ -93,4 +91,25 @@ public interface PictureService extends IService<Picture> {
      * @param oldPicture 图片信息
      */
     void clearPictureFile(Picture oldPicture);
+
+    /**
+     * 检查图片权限
+     * @param picture 图片信息
+     * @param loginUser 登录用户
+     */
+    void checkPictureAuth(Picture picture, User loginUser);
+
+    /**
+     * 删除图片
+     * @param deleteRequest 删除请求
+     * @param loginUser 登录用户
+     */
+    void deletePicture(DeleteRequest deleteRequest, User loginUser);
+
+    /**
+     * 编辑图片
+     * @param pictureEditRequest 图片编辑
+     * @param loginUser 登录用户
+     */
+    void editPicture(PictureEditRequest pictureEditRequest, User loginUser);
 }
