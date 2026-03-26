@@ -26,6 +26,8 @@
         <result property="reviewMessage" column="reviewMessage"/>
         <result property="reviewerId" column="reviewerId"/>
         <result property="reviewTime" column="reviewTime"/>
+        <result property="picColor" column="picColor"/>
+        <result property="spaceId" column="spaceId"/>
     </resultMap>
 
     <sql id="Base_Column_List">
@@ -33,6 +35,6 @@
         ,url,name,introduction,category,tags,
         picSize,picWidth,picHeight,picScale,picFormat,
         userId,createTime,editTime,updateTime,isDelete,
-        reviewStatus,reviewMessage,reviewerId,reviewTime,thumbnailUrl
+        reviewStatus,reviewMessage,reviewerId,reviewTime,thumbnailUrl,picColor,spaceId
     </sql>
 </mapper>

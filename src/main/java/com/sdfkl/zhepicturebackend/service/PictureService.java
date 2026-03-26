@@ -11,6 +11,7 @@ import com.sdfkl.zhepicturebackend.model.vo.PictureVO;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 /**
  * @author user
@@ -112,4 +113,22 @@ public interface PictureService extends IService<Picture> {
      * @param loginUser 登录用户
      */
     void editPicture(PictureEditRequest pictureEditRequest, User loginUser);
+
+    /**
+     * 根据颜色搜索图片
+     *
+     * @param spaceId   空间id
+     * @param picColor  颜色
+     * @param loginUser 登录用户
+     * @return 图片视图列表
+     */
+    List<PictureVO> searchPictureByColor(Long spaceId, String picColor, User loginUser);
+
+    /**
+     * 批量修改图片
+     *
+     * @param pictureEditByBatchRequest 图片批量修改请求
+     * @param loginUser                 登录用户
+     */
+    void editPictureByBatch(PictureEditByBatchRequest pictureEditByBatchRequest, User loginUser);
 }

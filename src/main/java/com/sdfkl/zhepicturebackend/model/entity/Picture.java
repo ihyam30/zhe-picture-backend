@@ -128,4 +128,9 @@ public class Picture implements Serializable {
      * 审核时间
      */
     private Date reviewTime;
+
+    /**
+     * 图片颜色
+     */
+    private String picColor;
 }
