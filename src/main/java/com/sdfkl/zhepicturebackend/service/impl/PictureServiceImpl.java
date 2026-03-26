@@ -12,6 +12,10 @@ import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.sdfkl.zhepicturebackend.api.aliyunai.AliYunAIApi;
+import com.sdfkl.zhepicturebackend.api.aliyunai.model.CreateOutPaintingTaskRequest;
+import com.sdfkl.zhepicturebackend.api.aliyunai.model.CreateOutPaintingTaskResponse;
 import com.sdfkl.zhepicturebackend.common.DeleteRequest;
 import com.sdfkl.zhepicturebackend.exception.BusinessException;
 import com.sdfkl.zhepicturebackend.exception.ErrorCode;
@@ -40,6 +44,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -75,6 +80,8 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
     private SpaceService spaceService;
     @Resource
     private TransactionTemplate transactionTemplate;
+    @Resource
+    private AliYunAIApi aliYunAIApi;
 
     /**
      * 上传图片
@@ -705,6 +712,43 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
             log.error("名称解析错误",e);
             throw new BusinessException(ErrorCode.OPERATION_ERROR,"名称解析错误");
         }
+    }
+
+    /**
+     * 创建 AI 扩图任务
+     *
+     * @param createPictureOutPaintingTaskRequest 图片外绘任务创建请求
+     * @param loginUser                           登录用户
+     * @return 创建的图片外绘任务响应
+     */
+    @Override
+    public CreateOutPaintingTaskResponse createOutPaintingTask(CreatePictureOutPaintingTaskRequest createPictureOutPaintingTaskRequest, User loginUser) throws JsonProcessingException {
+        // 获取图片信息
+        Long pictureId = createPictureOutPaintingTaskRequest.getPictureId();
+        Picture picture = Optional.ofNullable(this.getById(pictureId)).orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND_ERROR, "图片不存在"));
+        // 校验权限
+        checkPictureAuth(picture, loginUser);
+        // 创建扩图任务
+        CreateOutPaintingTaskRequest createOutPaintingTaskRequest = new CreateOutPaintingTaskRequest();
+        CreateOutPaintingTaskRequest.Input input = new CreateOutPaintingTaskRequest.Input();
+        input.setImageUrl(picture.getUrl());
+        createOutPaintingTaskRequest.setInput(input);
+        PictureOutPaintingParams dtoParams = createPictureOutPaintingTaskRequest.getParameters();
+
+        CreateOutPaintingTaskRequest.Parameters params = new CreateOutPaintingTaskRequest.Parameters();
+
+        if (dtoParams != null) {
+            params.setLeftOffset(dtoParams.getLeftOffset());
+            params.setRightOffset(dtoParams.getRightOffset());
+            params.setTopOffset(dtoParams.getTopOffset());
+            params.setBottomOffset(dtoParams.getBottomOffset());
+            params.setXScale(dtoParams.getXScale());
+            params.setYScale(dtoParams.getYScale());
+        }
+
+        createOutPaintingTaskRequest.setParameters(params);
+        // 创建任务
+        return aliYunAIApi.createOutPaintingTask(createOutPaintingTaskRequest, loginUser);
     }
 }
 

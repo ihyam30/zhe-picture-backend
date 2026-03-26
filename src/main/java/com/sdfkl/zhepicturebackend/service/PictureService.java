@@ -2,6 +2,8 @@ package com.sdfkl.zhepicturebackend.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.sdfkl.zhepicturebackend.api.aliyunai.model.CreateOutPaintingTaskResponse;
 import com.sdfkl.zhepicturebackend.common.DeleteRequest;
 import com.sdfkl.zhepicturebackend.model.dto.picture.*;
 import com.sdfkl.zhepicturebackend.model.entity.Picture;
@@ -131,4 +133,13 @@ public interface PictureService extends IService<Picture> {
      * @param loginUser                 登录用户
      */
     void editPictureByBatch(PictureEditByBatchRequest pictureEditByBatchRequest, User loginUser);
+
+    /**
+     * 创建图片外绘任务
+     *
+     * @param createPictureOutPaintingTaskRequest 图片外绘任务创建请求
+     * @param loginUser                           登录用户
+     * @return 图片外绘任务响应
+     */
+    CreateOutPaintingTaskResponse createOutPaintingTask(CreatePictureOutPaintingTaskRequest createPictureOutPaintingTaskRequest, User loginUser) throws JsonProcessingException;
 }
