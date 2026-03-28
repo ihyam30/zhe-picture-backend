@@ -7,6 +7,7 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.sdfkl.zhepicturebackend.common.ResultUtils;
 import com.sdfkl.zhepicturebackend.exception.BusinessException;
 import com.sdfkl.zhepicturebackend.exception.ErrorCode;
 import com.sdfkl.zhepicturebackend.exception.ThrowUtils;
@@ -225,6 +226,20 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper, Space>
                 return space.getId();
             });
             return Optional.ofNullable(newSpaceId).orElse(-1L);
+        }
+    }
+
+    /**
+     * 对空间权限进行校验
+     *
+     * @param loginUser 登录用户
+     * @param space     要校验的空间
+     */
+    @Override
+    public void checkSpaceAuth(User loginUser, Space space) {
+        // 仅管理员或本人可访问
+        if (!space.getUserId().equals(loginUser.getId()) && !userService.isAdmin(loginUser)) {
+            throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
         }
     }
 }
