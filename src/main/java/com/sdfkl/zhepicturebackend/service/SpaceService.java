@@ -67,4 +67,11 @@ public interface SpaceService extends IService<Space> {
      */
     long addSpace(SpaceAddRequest spaceAddRequest, User loginUser);
 
+    /**
+     * 对空间权限进行校验
+     *
+     * @param loginUser 登录用户
+     * @param space     要校验的空间
+     */
+    void checkSpaceAuth(User loginUser, Space space);
 }
