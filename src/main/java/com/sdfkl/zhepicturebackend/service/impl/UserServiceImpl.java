@@ -11,6 +11,7 @@ import com.sdfkl.zhepicturebackend.constant.UserConstant;
 import com.sdfkl.zhepicturebackend.exception.BusinessException;
 import com.sdfkl.zhepicturebackend.exception.ErrorCode;
 import com.sdfkl.zhepicturebackend.exception.ThrowUtils;
+import com.sdfkl.zhepicturebackend.manager.auth.StpKit;
 import com.sdfkl.zhepicturebackend.model.dto.user.UserLoginRequest;
 import com.sdfkl.zhepicturebackend.model.dto.user.UserQueryRequest;
 import com.sdfkl.zhepicturebackend.model.dto.user.UserRegisterRequest;
@@ -88,6 +89,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         }
         //4. 保存用户登录态
         request.getSession().setAttribute(UserConstant.USER_LOGIN_STATE, user);
+        // 记录用户登录态到 Sa-Token
+        StpKit.SPACE.login(user.getId());
+        StpKit.SPACE.getSession().set(UserConstant.USER_LOGIN_STATE, user);
         return BeanUtil.copyProperties(user, UserLoginVO.class);
     }
 
