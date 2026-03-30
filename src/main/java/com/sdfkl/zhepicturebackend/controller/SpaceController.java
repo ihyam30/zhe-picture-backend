@@ -10,6 +10,7 @@ import com.sdfkl.zhepicturebackend.common.ResultUtils;
 import com.sdfkl.zhepicturebackend.constant.UserConstant;
 import com.sdfkl.zhepicturebackend.exception.ErrorCode;
 import com.sdfkl.zhepicturebackend.exception.ThrowUtils;
+import com.sdfkl.zhepicturebackend.manager.auth.SpaceUserAuthManager;
 import com.sdfkl.zhepicturebackend.model.dto.space.*;
 import com.sdfkl.zhepicturebackend.model.entity.Space;
 import com.sdfkl.zhepicturebackend.model.entity.User;
@@ -38,6 +39,9 @@ public class SpaceController {
 
     @Resource
     private SpaceService spaceService;
+
+    @Resource
+    private SpaceUserAuthManager spaceUserAuthManager;
     
     /**
      * 空间删除
@@ -119,8 +123,12 @@ public class SpaceController {
         // 获取空间
         Space space = spaceService.getById(id);
         ThrowUtils.throwIf(space == null, ErrorCode.NOT_FOUND_ERROR, "空间不存在");
+        SpaceVO spaceVO = spaceService.getSpaceVO(space, request);
+        User loginUser = userService.getLoginUser(request);
+        List<String> permissionList = spaceUserAuthManager.getPermissionList(space, loginUser);
+        spaceVO.setPermissionList(permissionList);
         // 获取空间信息
-        return ResultUtils.success(spaceService.getSpaceVO(space,request));
+        return ResultUtils.success(spaceVO);
     }
 
     /**
