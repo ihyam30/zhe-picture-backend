@@ -47,7 +47,7 @@ spring:
   # Redis 配置
   redis:
     database: 5
-    host: 10.114.17.253
+    host: 10.114.65.82
     port: 6379
     password: 123456
     timeout: 5000
