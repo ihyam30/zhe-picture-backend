@@ -203,7 +203,7 @@ public class SpaceAnalyzeServiceImpl extends ServiceImpl<SpaceMapper, Space>
         String timeDimension = spaceUserAnalyzeRequest.getTimeDimension();
         switch (timeDimension){
             case "day":
-                queryWrapper.select("DATE_FORMAT(createTime,'%Y-%m-%d) as period","count(*) as count");
+                queryWrapper.select("DATE_FORMAT(createTime,'%Y-%m-%d') as period", "count(*) as count");
                 break;
             case "week":
                 queryWrapper.select("YEARWEEK(createTime) as period","count(*) as count");
@@ -219,7 +219,8 @@ public class SpaceAnalyzeServiceImpl extends ServiceImpl<SpaceMapper, Space>
         // 查询并封装结果
         return pictureService.getBaseMapper().selectMaps(queryWrapper).stream()
                 .map(result -> {
-                    String period = (String) result.get("period");
+                    Object periodObj = result.get("period");
+                    String period = periodObj == null ? null : String.valueOf(periodObj);
                     Long count = ((Number) result.get("count")).longValue();
                     return new SpaceUserAnalyzeResponse(period, count);
                 }).collect(Collectors.toList());

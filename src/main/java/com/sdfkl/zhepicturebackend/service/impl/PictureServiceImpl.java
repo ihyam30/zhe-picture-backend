@@ -182,16 +182,16 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
         // 开启事务
         Long finalSpaceId = spaceId;
         transactionTemplate.execute(status -> {
-            // 插入数据
             boolean result = this.saveOrUpdate(picture);
             ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR, "图片上传失败，数据库操作错误");
-            // 更新空间的使用额度
-            boolean update = spaceService.lambdaUpdate()
-                    .eq(Space::getId, finalSpaceId)
-                    .setSql("totalSize = totalSize +" + picture.getPicSize())
-                    .setSql("totalCount = totalCount + 1")
-                    .update();
-            ThrowUtils.throwIf(!update, ErrorCode.OPERATION_ERROR, "额度更新失败");
+            if (finalSpaceId != null) {
+                boolean update = spaceService.lambdaUpdate()
+                        .eq(Space::getId, finalSpaceId)
+                        .setSql("totalSize = totalSize + " + picture.getPicSize())
+                        .setSql("totalCount = totalCount + 1")
+                        .update();
+                ThrowUtils.throwIf(!update, ErrorCode.OPERATION_ERROR, "额度更新失败");
+            }
             return true;
         });
         return PictureVO.objectToVO(picture);
@@ -252,7 +252,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
         queryWrapper.eq(StrUtil.isNotBlank(picFormat), "picFormat", picFormat);
         queryWrapper.eq(ObjectUtil.isNotEmpty(userId), "userId", userId);
         queryWrapper.eq(ObjectUtil.isNotEmpty(spaceId), "spaceId", spaceId);
-        queryWrapper.isNull(nullSpaceId,"spaceId");
+        queryWrapper.isNull(Boolean.TRUE.equals(nullSpaceId), "spaceId");
         queryWrapper.eq(ObjectUtil.isNotEmpty(reviewStatus), "reviewStatus", reviewStatus);
         queryWrapper.like(StrUtil.isNotBlank(reviewMessage), "reviewMessage", reviewMessage);
         queryWrapper.eq(ObjectUtil.isNotEmpty(reviewerId), "reviewerId", reviewerId);
@@ -722,31 +722,94 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
      * @return 创建的图片外绘任务响应
      */
     @Override
-    public CreateOutPaintingTaskResponse createOutPaintingTask(CreatePictureOutPaintingTaskRequest createPictureOutPaintingTaskRequest, User loginUser) throws JsonProcessingException {
+    public CreateOutPaintingTaskResponse createOutPaintingTask(
+            CreatePictureOutPaintingTaskRequest createPictureOutPaintingTaskRequest,
+            User loginUser
+    ) throws JsonProcessingException {
         // 获取图片信息
         Long pictureId = createPictureOutPaintingTaskRequest.getPictureId();
-        Picture picture = Optional.ofNullable(this.getById(pictureId)).orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND_ERROR, "图片不存在"));
+        Picture picture = Optional.ofNullable(this.getById(pictureId))
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND_ERROR, "图片不存在"));
+
         // 校验权限
-        //checkPictureAuth(picture, loginUser);
+        // checkPictureAuth(picture, loginUser);
+
+        // 参数校验
+        PictureOutPaintingParams dtoParams = createPictureOutPaintingTaskRequest.getParameters();
+        if (dtoParams == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "扩图参数不能为空");
+        }
+
+        if(picture.getPicWidth() < 512 || picture.getPicHeight() < 512){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "图片宽高不能小于512");
+        }
+
+        int leftOffset = dtoParams.getLeftOffset() == null ? 0 : dtoParams.getLeftOffset();
+        int rightOffset = dtoParams.getRightOffset() == null ? 0 : dtoParams.getRightOffset();
+        int topOffset = dtoParams.getTopOffset() == null ? 0 : dtoParams.getTopOffset();
+        int bottomOffset = dtoParams.getBottomOffset() == null ? 0 : dtoParams.getBottomOffset();
+
+        Double xScale = dtoParams.getXScale();
+        Double yScale = dtoParams.getYScale();
+
+        Boolean addWatermark = dtoParams.getAddWatermark();
+        Integer angle = dtoParams.getAngle();
+        String outputRatio = dtoParams.getOutputRatio();
+        Boolean limitImageSize = dtoParams.getLimitImageSize();
+        Boolean bestQuality = dtoParams.getBestQuality();
+
+        boolean useOffsetMode =
+                (leftOffset > 0 || rightOffset > 0 || topOffset > 0 || bottomOffset > 0)
+                        && xScale == null
+                        && yScale == null;
+
+        boolean useScaleMode =
+                xScale != null
+                        && yScale != null
+                        && leftOffset == 0
+                        && rightOffset == 0
+                        && topOffset == 0
+                        && bottomOffset == 0;
+
+        if (!useOffsetMode && !useScaleMode) {
+            throw new BusinessException(
+                    ErrorCode.PARAMS_ERROR,
+                    String.format(
+                            "扩图参数不合法: left=%s,right=%s,top=%s,bottom=%s,xScale=%s,yScale=%s",
+                            leftOffset, rightOffset, topOffset, bottomOffset, xScale, yScale
+                    )
+            );
+        }
+
         // 创建扩图任务
         CreateOutPaintingTaskRequest createOutPaintingTaskRequest = new CreateOutPaintingTaskRequest();
+
         CreateOutPaintingTaskRequest.Input input = new CreateOutPaintingTaskRequest.Input();
         input.setImageUrl(picture.getUrl());
         createOutPaintingTaskRequest.setInput(input);
-        PictureOutPaintingParams dtoParams = createPictureOutPaintingTaskRequest.getParameters();
 
         CreateOutPaintingTaskRequest.Parameters params = new CreateOutPaintingTaskRequest.Parameters();
 
-        if (dtoParams != null) {
-            params.setLeftOffset(dtoParams.getLeftOffset());
-            params.setRightOffset(dtoParams.getRightOffset());
-            params.setTopOffset(dtoParams.getTopOffset());
-            params.setBottomOffset(dtoParams.getBottomOffset());
-            params.setXScale(dtoParams.getXScale());
-            params.setYScale(dtoParams.getYScale());
+        if (useOffsetMode) {
+            params.setLeftOffset(leftOffset);
+            params.setRightOffset(rightOffset);
+            params.setTopOffset(topOffset);
+            params.setBottomOffset(bottomOffset);
         }
 
+        if (useScaleMode) {
+            params.setXScale(xScale == null ? null : xScale.floatValue());
+            params.setYScale(yScale == null ? null : yScale.floatValue());
+        }
+
+        params.setAddWatermark(addWatermark);
+        params.setAngle(angle);
+        params.setOutputRatio(outputRatio);
+        params.setLimitImageSize(limitImageSize);
+        params.setBestQuality(bestQuality);
+
         createOutPaintingTaskRequest.setParameters(params);
+
         // 创建任务
         return aliYunAIApi.createOutPaintingTask(createOutPaintingTaskRequest, loginUser);
     }

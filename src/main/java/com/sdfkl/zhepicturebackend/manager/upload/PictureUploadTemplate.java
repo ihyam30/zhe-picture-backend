@@ -116,11 +116,23 @@ public abstract class PictureUploadTemplate {
             ProcessResults processResults = putObjectResult.getCiUploadResult().getProcessResults();
             List<CIObject> objectList = processResults.getObjectList();
             if(CollUtil.isNotEmpty(objectList)){
-                CIObject compressCiObject = objectList.get(0);
-                // 缩略图默认等于压缩图
-                CIObject thumbnailCiObject = compressCiObject;
-                if(objectList.size() > 1){
-                    thumbnailCiObject = objectList.get(1);
+                CIObject compressCiObject = null;
+                CIObject thumbnailCiObject = null;
+                for (CIObject ciObject : objectList) {
+                    String key = ciObject.getKey();
+                    if (key != null && key.contains("_thumbnail")) {
+                        thumbnailCiObject = ciObject;
+                    } else if (compressCiObject == null) {
+                        compressCiObject = ciObject;
+                    }
+                }
+                // 如果没找到主图，就退化成用第一个
+                if (compressCiObject == null) {
+                    compressCiObject = objectList.get(0);
+                }
+                // 如果没找到缩略图，就让缩略图等于主图
+                if (thumbnailCiObject == null) {
+                    thumbnailCiObject = compressCiObject;
                 }
                 return buildResult(originalFilename, compressCiObject, thumbnailCiObject, imageInfo);
             }

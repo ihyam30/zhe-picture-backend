@@ -251,10 +251,15 @@ public class PictureController {
         ThrowUtils.throwIf(pageSize > 20, ErrorCode.PARAMS_ERROR);
         // 空间权限校验
         Long spaceId = pictureQueryRequest.getSpaceId();
+
+        User loginUser = userService.getLoginUser(request);
+
         if(spaceId == null){
             // 公开图库
             // 普通用户默认只能看到审核通过的数据
-            pictureQueryRequest.setReviewStatus(PictureReviewStatusEnum.PASS.getValue());
+            if (!userService.isAdmin(loginUser)) {
+                pictureQueryRequest.setReviewStatus(PictureReviewStatusEnum.PASS.getValue());
+            }
             pictureQueryRequest.setNullSpaceId(true);
         }else {
             boolean b = StpKit.SPACE.hasPermission(SpaceUserPermissionConstant.PICTURE_VIEW);
@@ -426,6 +431,8 @@ public class PictureController {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         User loginUser = userService.getLoginUser(request);
+        log.info("request = {}", JSONUtil.toJsonStr(createPictureOutPaintingTaskRequest));
+        log.info("params = {}", JSONUtil.toJsonStr(createPictureOutPaintingTaskRequest.getParameters()));
         CreateOutPaintingTaskResponse response = pictureService.createOutPaintingTask(createPictureOutPaintingTaskRequest, loginUser);
         return ResultUtils.success(response);
     }
