@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { computed, reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
@@ -19,13 +19,6 @@ const redirect = computed(() =>
   typeof route.query.redirect === 'string' ? route.query.redirect : '/dashboard',
 );
 
-const previewCards = [
-  '公共图库检索',
-  '空间协同管理',
-  'AI 扩图任务',
-  '图片详情编辑',
-];
-
 async function handleSubmit() {
   if (!form.userAccount.trim() || !form.userPassword.trim()) {
     ElMessage.warning('请输入账号和密码');
@@ -43,40 +36,48 @@ async function handleSubmit() {
 </script>
 
 <template>
-  <div class="auth-shell">
-    <section class="auth-showcase">
-      <div class="showcase-brand">
-        <div class="showcase-logo"></div>
+  <div class="auth-shell auth-shell--login">
+    <section class="auth-aside">
+      <div class="brand-row">
+        <div class="brand-logo"></div>
         <span>{{ APP_TITLE }}</span>
       </div>
 
-      <div class="showcase-content">
-        <div class="showcase-kicker">在线图片管理与协同编辑系统</div>
-        <h1>像你给的参考图一样，做一套更轻、更干净的云图库后台。</h1>
+      <div class="aside-copy">
+        <div class="auth-kicker">后台入口</div>
+        <h1>更轻、更干净的云图库管理后台</h1>
         <p>
-          登录后即可进入图库首页、图片管理、空间协作、成员管理、空间分析与 AI 扩图等模块。
+          登录后即可进入图片管理、空间协作、成员管理、空间分析与 AI 扩图等模块，直接开始联调与日常管理。
         </p>
 
-        <div class="preview-grid">
-          <div v-for="item in previewCards" :key="item" class="preview-card">
-            <div class="preview-cover"></div>
-            <div class="preview-title">{{ item }}</div>
+        <div class="aside-points">
+          <div class="aside-point">
+            <strong>图片管理</strong>
+            <span>上传、编辑、审核与颜色检索统一入口。</span>
+          </div>
+          <div class="aside-point">
+            <strong>空间协作</strong>
+            <span>团队成员、权限与协同编辑能力集中处理。</span>
+          </div>
+          <div class="aside-point">
+            <strong>分析与 AI</strong>
+            <span>空间分析、AI 扩图与结果回写已串联。</span>
           </div>
         </div>
       </div>
     </section>
 
-    <section class="auth-panel-wrap">
-      <div class="auth-panel surface-panel">
+    <section class="auth-main">
+      <div class="auth-card surface-panel">
         <div>
-          <div class="auth-caption">欢迎回来</div>
+          <div class="auth-kicker">欢迎回来</div>
           <h2>登录系统</h2>
-          <p class="auth-desc">请输入账号和密码，进入折纸云图库管理后台。</p>
+          <p class="auth-desc">输入账号和密码，进入折纸云图库管理后台。</p>
         </div>
 
-        <el-form @submit.prevent="handleSubmit">
+        <el-form label-position="top" @submit.prevent="handleSubmit">
           <el-form-item label="账号">
-            <el-input v-model="form.userAccount" placeholder="请输入账号" size="large" />
+            <el-input v-model="form.userAccount" placeholder="请输入账号" size="large" clearable />
           </el-form-item>
           <el-form-item label="密码">
             <el-input
@@ -88,17 +89,10 @@ async function handleSubmit() {
               @keyup.enter="handleSubmit"
             />
           </el-form-item>
-          <el-button type="primary" size="large" :loading="loading" style="width: 100%" @click="handleSubmit">
+          <el-button type="primary" size="large" :loading="loading" class="auth-submit" @click="handleSubmit">
             登录
           </el-button>
         </el-form>
-
-        <el-alert
-          title="如果提示 Network Error，请确认后端 http://localhost:8123 已启动，并且前端可访问 /api。"
-          type="info"
-          :closable="false"
-          show-icon
-        />
 
         <div class="auth-footer">
           <span class="muted-text">还没有账号？</span>
@@ -113,30 +107,31 @@ async function handleSubmit() {
 .auth-shell {
   min-height: 100vh;
   display: grid;
-  grid-template-columns: 1.1fr 0.9fr;
+  grid-template-columns: minmax(440px, 1fr) minmax(420px, 520px);
   background:
-    radial-gradient(circle at top left, rgba(47, 109, 246, 0.18), transparent 28%),
-    linear-gradient(135deg, #f8fbff, #f4f7fc 55%, #eef3fb);
+    radial-gradient(circle at top left, rgba(47, 109, 246, 0.14), transparent 30%),
+    linear-gradient(135deg, #f7faff, #eef3fb 58%, #e8eef9);
 }
 
-.auth-showcase {
+.auth-aside {
   padding: 44px 56px;
   display: flex;
   flex-direction: column;
 }
 
-.showcase-brand {
+.brand-row {
   display: inline-flex;
   align-items: center;
   gap: 14px;
-  font-size: 32px;
-  font-weight: 700;
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--text-primary);
 }
 
-.showcase-logo {
-  width: 78px;
-  height: 56px;
-  border-radius: 4px;
+.brand-logo {
+  width: 72px;
+  height: 52px;
+  border-radius: 6px;
   background:
     radial-gradient(circle at 32% 52%, #ffffff 0 14px, transparent 15px),
     radial-gradient(circle at 52% 48%, #9fe7ff 0 12px, transparent 13px),
@@ -145,7 +140,7 @@ async function handleSubmit() {
   overflow: hidden;
 }
 
-.showcase-logo::after {
+.brand-logo::after {
   content: '';
   position: absolute;
   inset: auto 14px 10px 12px;
@@ -154,86 +149,76 @@ async function handleSubmit() {
   background: linear-gradient(135deg, #f47cf9, #88e0ff 72%, #ffffff);
 }
 
-.showcase-content {
+.aside-copy {
   margin: auto 0;
-  max-width: 760px;
+  max-width: 680px;
 }
 
-.showcase-kicker {
+.auth-kicker {
   color: var(--primary-color);
-  font-size: 14px;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-}
-
-.auth-showcase h1 {
-  margin: 18px 0 16px;
-  font-size: 54px;
-  line-height: 1.14;
-}
-
-.auth-showcase p {
-  margin: 0;
-  color: var(--text-secondary);
-  font-size: 16px;
-  line-height: 1.9;
-}
-
-.preview-grid {
-  margin-top: 36px;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 18px;
-}
-
-.preview-card {
-  padding: 18px;
-  border-radius: 22px;
-  border: 1px solid rgba(47, 109, 246, 0.12);
-  background: rgba(255, 255, 255, 0.72);
-  backdrop-filter: blur(8px);
-}
-
-.preview-cover {
-  height: 148px;
-  border-radius: 18px;
-  background:
-    linear-gradient(135deg, rgba(47, 109, 246, 0.12), rgba(255, 255, 255, 0.85)),
-    radial-gradient(circle at top right, rgba(47, 109, 246, 0.25), transparent 35%),
-    #f8faff;
-  border: 1px solid rgba(47, 109, 246, 0.08);
-}
-
-.preview-title {
-  margin-top: 14px;
-  font-size: 18px;
-  font-weight: 700;
-}
-
-.auth-panel-wrap {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 48px;
-}
-
-.auth-panel {
-  width: min(520px, 100%);
-  padding: 40px;
-  display: grid;
-  gap: 24px;
-}
-
-.auth-caption {
-  color: var(--primary-color);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
   letter-spacing: 0.12em;
 }
 
-.auth-panel h2 {
-  margin: 12px 0 8px;
-  font-size: 36px;
+.aside-copy h1 {
+  margin: 18px 0 16px;
+  font-size: 64px;
+  line-height: 1.04;
+  letter-spacing: -0.04em;
+}
+
+.aside-copy p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 16px;
+  line-height: 1.85;
+}
+
+.aside-points {
+  margin-top: 34px;
+  display: grid;
+  gap: 16px;
+}
+
+.aside-point {
+  padding: 18px 20px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(47, 109, 246, 0.1);
+  backdrop-filter: blur(8px);
+}
+
+.aside-point strong {
+  display: block;
+  font-size: 17px;
+  margin-bottom: 6px;
+}
+
+.aside-point span {
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+.auth-main {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 48px 40px 0;
+}
+
+.auth-card {
+  width: min(500px, 100%);
+  padding: 42px 40px;
+  display: grid;
+  gap: 26px;
+  border-radius: 30px;
+}
+
+.auth-card h2 {
+  margin: 10px 0 8px;
+  font-size: 34px;
+  line-height: 1.12;
 }
 
 .auth-desc {
@@ -242,10 +227,30 @@ async function handleSubmit() {
   line-height: 1.7;
 }
 
+.auth-submit {
+  width: 100%;
+  margin-top: 6px;
+}
+
 .auth-footer {
   display: flex;
   gap: 10px;
   align-items: center;
+}
+
+:deep(.el-form-item) {
+  margin-bottom: 20px;
+}
+
+:deep(.el-form-item__label) {
+  font-weight: 700;
+  color: var(--text-primary);
+  padding-bottom: 8px;
+}
+
+:deep(.el-input__wrapper) {
+  min-height: 48px;
+  border-radius: 16px;
 }
 
 @media (max-width: 1280px) {
@@ -253,12 +258,16 @@ async function handleSubmit() {
     grid-template-columns: 1fr;
   }
 
-  .auth-showcase {
-    padding-bottom: 12px;
+  .auth-main {
+    padding: 0 24px 32px;
   }
 
-  .preview-grid {
-    grid-template-columns: 1fr 1fr;
+  .auth-aside {
+    padding: 32px 24px 20px;
+  }
+
+  .aside-copy h1 {
+    font-size: 46px;
   }
 }
 </style>

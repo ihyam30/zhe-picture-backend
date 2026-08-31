@@ -1,5 +1,5 @@
-import { DataAnalysis, FolderOpened, House, Picture, Search, SwitchButton, User, UserFilled, } from '@element-plus/icons-vue';
-import { computed, ref } from 'vue';
+import { DataAnalysis, FolderOpened, House, Picture, SwitchButton, User, UserFilled, } from '@element-plus/icons-vue';
+import { computed } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { useRoute, useRouter } from 'vue-router';
 import { APP_TITLE } from '@/constants/app';
@@ -7,7 +7,6 @@ import { useAuthStore } from '@/store/auth';
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
-const headerKeyword = ref('');
 const menuItems = computed(() => {
     const items = [
         { path: '/dashboard', label: '首页', icon: House },
@@ -27,12 +26,6 @@ const activePath = computed(() => {
 });
 function go(path) {
     router.push(path);
-}
-function handleGlobalSearch() {
-    router.push({
-        path: '/dashboard',
-        query: headerKeyword.value ? { q: headerKeyword.value } : {},
-    });
 }
 async function handleLogout() {
     try {
@@ -55,9 +48,7 @@ let __VLS_directives;
 /** @type {__VLS_StyleScopedClasses['top-nav-item']} */ ;
 /** @type {__VLS_StyleScopedClasses['top-nav-item']} */ ;
 /** @type {__VLS_StyleScopedClasses['active']} */ ;
-/** @type {__VLS_StyleScopedClasses['header-search']} */ ;
 /** @type {__VLS_StyleScopedClasses['app-header-inner']} */ ;
-/** @type {__VLS_StyleScopedClasses['header-search']} */ ;
 /** @type {__VLS_StyleScopedClasses['user-brief-name']} */ ;
 // CSS variable injection 
 // CSS variable injection end 
@@ -129,146 +120,105 @@ for (const [item] of __VLS_getVForSourceType((__VLS_ctx.menuItems))) {
 __VLS_asFunctionalElement(__VLS_intrinsicElements.div, __VLS_intrinsicElements.div)({
     ...{ class: "header-right" },
 });
-__VLS_asFunctionalElement(__VLS_intrinsicElements.div, __VLS_intrinsicElements.div)({
-    ...{ class: "header-search" },
-});
-const __VLS_8 = {}.ElInput;
-/** @type {[typeof __VLS_components.ElInput, typeof __VLS_components.elInput, typeof __VLS_components.ElInput, typeof __VLS_components.elInput, ]} */ ;
-// @ts-ignore
-const __VLS_9 = __VLS_asFunctionalComponent(__VLS_8, new __VLS_8({
-    ...{ 'onKeyup': {} },
-    modelValue: (__VLS_ctx.headerKeyword),
-    placeholder: "搜索图片 / 空间 / 标签",
-    clearable: true,
-}));
-const __VLS_10 = __VLS_9({
-    ...{ 'onKeyup': {} },
-    modelValue: (__VLS_ctx.headerKeyword),
-    placeholder: "搜索图片 / 空间 / 标签",
-    clearable: true,
-}, ...__VLS_functionalComponentArgsRest(__VLS_9));
-let __VLS_12;
-let __VLS_13;
-let __VLS_14;
-const __VLS_15 = {
-    onKeyup: (__VLS_ctx.handleGlobalSearch)
-};
-__VLS_11.slots.default;
-{
-    const { prefix: __VLS_thisSlot } = __VLS_11.slots;
-    const __VLS_16 = {}.ElIcon;
-    /** @type {[typeof __VLS_components.ElIcon, typeof __VLS_components.elIcon, typeof __VLS_components.ElIcon, typeof __VLS_components.elIcon, ]} */ ;
-    // @ts-ignore
-    const __VLS_17 = __VLS_asFunctionalComponent(__VLS_16, new __VLS_16({}));
-    const __VLS_18 = __VLS_17({}, ...__VLS_functionalComponentArgsRest(__VLS_17));
-    __VLS_19.slots.default;
-    const __VLS_20 = {}.Search;
-    /** @type {[typeof __VLS_components.Search, ]} */ ;
-    // @ts-ignore
-    const __VLS_21 = __VLS_asFunctionalComponent(__VLS_20, new __VLS_20({}));
-    const __VLS_22 = __VLS_21({}, ...__VLS_functionalComponentArgsRest(__VLS_21));
-    var __VLS_19;
-}
-var __VLS_11;
-const __VLS_24 = {}.ElDropdown;
+const __VLS_8 = {}.ElDropdown;
 /** @type {[typeof __VLS_components.ElDropdown, typeof __VLS_components.elDropdown, typeof __VLS_components.ElDropdown, typeof __VLS_components.elDropdown, ]} */ ;
 // @ts-ignore
-const __VLS_25 = __VLS_asFunctionalComponent(__VLS_24, new __VLS_24({}));
-const __VLS_26 = __VLS_25({}, ...__VLS_functionalComponentArgsRest(__VLS_25));
-__VLS_27.slots.default;
+const __VLS_9 = __VLS_asFunctionalComponent(__VLS_8, new __VLS_8({}));
+const __VLS_10 = __VLS_9({}, ...__VLS_functionalComponentArgsRest(__VLS_9));
+__VLS_11.slots.default;
 __VLS_asFunctionalElement(__VLS_intrinsicElements.div, __VLS_intrinsicElements.div)({
     ...{ class: "user-brief" },
 });
-const __VLS_28 = {}.ElAvatar;
+const __VLS_12 = {}.ElAvatar;
 /** @type {[typeof __VLS_components.ElAvatar, typeof __VLS_components.elAvatar, typeof __VLS_components.ElAvatar, typeof __VLS_components.elAvatar, ]} */ ;
 // @ts-ignore
-const __VLS_29 = __VLS_asFunctionalComponent(__VLS_28, new __VLS_28({
+const __VLS_13 = __VLS_asFunctionalComponent(__VLS_12, new __VLS_12({
     size: (42),
     src: (__VLS_ctx.authStore.user?.userAvatar),
 }));
-const __VLS_30 = __VLS_29({
+const __VLS_14 = __VLS_13({
     size: (42),
     src: (__VLS_ctx.authStore.user?.userAvatar),
-}, ...__VLS_functionalComponentArgsRest(__VLS_29));
-__VLS_31.slots.default;
+}, ...__VLS_functionalComponentArgsRest(__VLS_13));
+__VLS_15.slots.default;
 (__VLS_ctx.authStore.user?.userName?.slice(0, 1) || 'U');
-var __VLS_31;
+var __VLS_15;
 __VLS_asFunctionalElement(__VLS_intrinsicElements.div, __VLS_intrinsicElements.div)({
     ...{ class: "user-brief-name" },
 });
 (__VLS_ctx.authStore.user?.userName || __VLS_ctx.authStore.user?.userAccount);
 {
-    const { dropdown: __VLS_thisSlot } = __VLS_27.slots;
-    const __VLS_32 = {}.ElDropdownMenu;
+    const { dropdown: __VLS_thisSlot } = __VLS_11.slots;
+    const __VLS_16 = {}.ElDropdownMenu;
     /** @type {[typeof __VLS_components.ElDropdownMenu, typeof __VLS_components.elDropdownMenu, typeof __VLS_components.ElDropdownMenu, typeof __VLS_components.elDropdownMenu, ]} */ ;
     // @ts-ignore
-    const __VLS_33 = __VLS_asFunctionalComponent(__VLS_32, new __VLS_32({}));
-    const __VLS_34 = __VLS_33({}, ...__VLS_functionalComponentArgsRest(__VLS_33));
-    __VLS_35.slots.default;
-    const __VLS_36 = {}.ElDropdownItem;
+    const __VLS_17 = __VLS_asFunctionalComponent(__VLS_16, new __VLS_16({}));
+    const __VLS_18 = __VLS_17({}, ...__VLS_functionalComponentArgsRest(__VLS_17));
+    __VLS_19.slots.default;
+    const __VLS_20 = {}.ElDropdownItem;
     /** @type {[typeof __VLS_components.ElDropdownItem, typeof __VLS_components.elDropdownItem, typeof __VLS_components.ElDropdownItem, typeof __VLS_components.elDropdownItem, ]} */ ;
     // @ts-ignore
-    const __VLS_37 = __VLS_asFunctionalComponent(__VLS_36, new __VLS_36({
+    const __VLS_21 = __VLS_asFunctionalComponent(__VLS_20, new __VLS_20({
         ...{ 'onClick': {} },
     }));
-    const __VLS_38 = __VLS_37({
+    const __VLS_22 = __VLS_21({
         ...{ 'onClick': {} },
-    }, ...__VLS_functionalComponentArgsRest(__VLS_37));
-    let __VLS_40;
-    let __VLS_41;
-    let __VLS_42;
-    const __VLS_43 = {
+    }, ...__VLS_functionalComponentArgsRest(__VLS_21));
+    let __VLS_24;
+    let __VLS_25;
+    let __VLS_26;
+    const __VLS_27 = {
         onClick: (...[$event]) => {
             __VLS_ctx.router.push('/profile');
         }
     };
-    __VLS_39.slots.default;
-    var __VLS_39;
-    const __VLS_44 = {}.ElDropdownItem;
+    __VLS_23.slots.default;
+    var __VLS_23;
+    const __VLS_28 = {}.ElDropdownItem;
     /** @type {[typeof __VLS_components.ElDropdownItem, typeof __VLS_components.elDropdownItem, typeof __VLS_components.ElDropdownItem, typeof __VLS_components.elDropdownItem, ]} */ ;
     // @ts-ignore
-    const __VLS_45 = __VLS_asFunctionalComponent(__VLS_44, new __VLS_44({
+    const __VLS_29 = __VLS_asFunctionalComponent(__VLS_28, new __VLS_28({
         ...{ 'onClick': {} },
         divided: true,
     }));
-    const __VLS_46 = __VLS_45({
+    const __VLS_30 = __VLS_29({
         ...{ 'onClick': {} },
         divided: true,
-    }, ...__VLS_functionalComponentArgsRest(__VLS_45));
-    let __VLS_48;
-    let __VLS_49;
-    let __VLS_50;
-    const __VLS_51 = {
+    }, ...__VLS_functionalComponentArgsRest(__VLS_29));
+    let __VLS_32;
+    let __VLS_33;
+    let __VLS_34;
+    const __VLS_35 = {
         onClick: (__VLS_ctx.handleLogout)
     };
-    __VLS_47.slots.default;
-    const __VLS_52 = {}.ElIcon;
+    __VLS_31.slots.default;
+    const __VLS_36 = {}.ElIcon;
     /** @type {[typeof __VLS_components.ElIcon, typeof __VLS_components.elIcon, typeof __VLS_components.ElIcon, typeof __VLS_components.elIcon, ]} */ ;
     // @ts-ignore
-    const __VLS_53 = __VLS_asFunctionalComponent(__VLS_52, new __VLS_52({}));
-    const __VLS_54 = __VLS_53({}, ...__VLS_functionalComponentArgsRest(__VLS_53));
-    __VLS_55.slots.default;
-    const __VLS_56 = {}.SwitchButton;
+    const __VLS_37 = __VLS_asFunctionalComponent(__VLS_36, new __VLS_36({}));
+    const __VLS_38 = __VLS_37({}, ...__VLS_functionalComponentArgsRest(__VLS_37));
+    __VLS_39.slots.default;
+    const __VLS_40 = {}.SwitchButton;
     /** @type {[typeof __VLS_components.SwitchButton, ]} */ ;
     // @ts-ignore
-    const __VLS_57 = __VLS_asFunctionalComponent(__VLS_56, new __VLS_56({}));
-    const __VLS_58 = __VLS_57({}, ...__VLS_functionalComponentArgsRest(__VLS_57));
-    var __VLS_55;
-    var __VLS_47;
-    var __VLS_35;
+    const __VLS_41 = __VLS_asFunctionalComponent(__VLS_40, new __VLS_40({}));
+    const __VLS_42 = __VLS_41({}, ...__VLS_functionalComponentArgsRest(__VLS_41));
+    var __VLS_39;
+    var __VLS_31;
+    var __VLS_19;
 }
-var __VLS_27;
+var __VLS_11;
 __VLS_asFunctionalElement(__VLS_intrinsicElements.main, __VLS_intrinsicElements.main)({
     ...{ class: "app-main" },
 });
 __VLS_asFunctionalElement(__VLS_intrinsicElements.div, __VLS_intrinsicElements.div)({
     ...{ class: "app-main-inner" },
 });
-const __VLS_60 = {}.RouterView;
+const __VLS_44 = {}.RouterView;
 /** @type {[typeof __VLS_components.RouterView, typeof __VLS_components.routerView, ]} */ ;
 // @ts-ignore
-const __VLS_61 = __VLS_asFunctionalComponent(__VLS_60, new __VLS_60({}));
-const __VLS_62 = __VLS_61({}, ...__VLS_functionalComponentArgsRest(__VLS_61));
+const __VLS_45 = __VLS_asFunctionalComponent(__VLS_44, new __VLS_44({}));
+const __VLS_46 = __VLS_45({}, ...__VLS_functionalComponentArgsRest(__VLS_45));
 /** @type {__VLS_StyleScopedClasses['app-layout']} */ ;
 /** @type {__VLS_StyleScopedClasses['app-header']} */ ;
 /** @type {__VLS_StyleScopedClasses['app-header-inner']} */ ;
@@ -287,7 +237,6 @@ const __VLS_62 = __VLS_61({}, ...__VLS_functionalComponentArgsRest(__VLS_61));
 /** @type {__VLS_StyleScopedClasses['top-nav-item']} */ ;
 /** @type {__VLS_StyleScopedClasses['top-nav-icon']} */ ;
 /** @type {__VLS_StyleScopedClasses['header-right']} */ ;
-/** @type {__VLS_StyleScopedClasses['header-search']} */ ;
 /** @type {__VLS_StyleScopedClasses['user-brief']} */ ;
 /** @type {__VLS_StyleScopedClasses['user-brief-name']} */ ;
 /** @type {__VLS_StyleScopedClasses['app-main']} */ ;
@@ -296,16 +245,13 @@ var __VLS_dollars;
 const __VLS_self = (await import('vue')).defineComponent({
     setup() {
         return {
-            Search: Search,
             SwitchButton: SwitchButton,
             APP_TITLE: APP_TITLE,
             router: router,
             authStore: authStore,
-            headerKeyword: headerKeyword,
             menuItems: menuItems,
             activePath: activePath,
             go: go,
-            handleGlobalSearch: handleGlobalSearch,
             handleLogout: handleLogout,
         };
     },

@@ -2,9 +2,30 @@ server:
   port: 8123
   servlet:
     context-path: /api
-    session:
-      cookie:
-        max-age: 2592000
+sa-token:
+  token-name: satoken
+  timeout: 2592000
+  active-timeout: -1
+  is-concurrent: true
+  is-share: false
+  is-read-body: false
+  is-read-header: true
+  is-read-cookie: true
+  is-lasting-cookie: true
+  is-log: false
+  cookie:
+    httpOnly: true
+    secure: ${SA_TOKEN_COOKIE_SECURE:true}
+    sameSite: Lax
+app:
+  cors:
+    allowed-origins: http://localhost:5173,http://127.0.0.1:5173
+cos:
+  client:
+    secretId: ${COS_SECRET_ID:}
+    secretKey: ${COS_SECRET_KEY:}
+aliyun:
+  apiKey: ${ALIYUN_API_KEY:}
 spring:
   servlet:
     multipart:
@@ -13,7 +34,7 @@ spring:
   shardingsphere:
     datasource:
       names: zhe_picture
-      yu_picture:
+      zhe_picture:
         type: com.zaxxer.hikari.HikariDataSource
         driver-class-name: com.mysql.cj.jdbc.Driver
         url: jdbc:mysql://localhost:3306/zhe_picture
@@ -47,14 +68,10 @@ spring:
   # Redis 配置
   redis:
     database: 5
-    host: 10.114.65.82
+    host: localhost
     port: 6379
     password: <REDACTED>
     timeout: 5000
-  # Session 配置
-  session:
-    store-type: redis
-    timeout: 2592000
   profiles:
     active: local
 mybatis-plus:

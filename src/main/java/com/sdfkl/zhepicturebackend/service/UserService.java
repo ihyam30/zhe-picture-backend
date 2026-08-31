@@ -9,7 +9,6 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.sdfkl.zhepicturebackend.model.vo.UserLoginVO;
 import com.sdfkl.zhepicturebackend.model.vo.UserVO;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 /**
@@ -32,23 +31,7 @@ public interface UserService extends IService<User> {
      * @param loginRequest 登录请求
      * @return 登录信息
      */
-    UserLoginVO userLogin(UserLoginRequest loginRequest, HttpServletRequest request);
-
-    /**
-     * 获取当前登录用户
-     *
-     * @param request 请求
-     * @return 用户
-     */
-    User getLoginUser(HttpServletRequest request);
-
-    /**
-     * 用户登出
-     *
-     * @param request 请求
-     * @return 是否登出成功
-     */
-    Boolean userLogout(HttpServletRequest request);
+    UserLoginVO userLogin(UserLoginRequest loginRequest);
 
     /**
      * 获取脱敏后的用户信息

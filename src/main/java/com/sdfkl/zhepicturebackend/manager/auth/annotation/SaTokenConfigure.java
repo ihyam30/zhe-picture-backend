@@ -1,7 +1,10 @@
 package com.sdfkl.zhepicturebackend.manager.auth.annotation;
 
 import cn.dev33.satoken.interceptor.SaInterceptor;
+import cn.dev33.satoken.router.SaHttpMethod;
+import cn.dev33.satoken.router.SaRouter;
 import cn.dev33.satoken.strategy.SaAnnotationStrategy;
+import com.sdfkl.zhepicturebackend.manager.auth.StpKit;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -18,8 +21,22 @@ public class SaTokenConfigure implements WebMvcConfigurer {
     // 注册 Sa-Token 拦截器，打开注解式鉴权功能
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        // 注册 Sa-Token 拦截器，打开注解式鉴权功能
-        registry.addInterceptor(new SaInterceptor()).addPathPatterns("/**");
+        // Require a valid user token for every API route except explicitly public routes.
+        registry.addInterceptor(new SaInterceptor(handle -> {
+            SaRouter.match("/**")
+                    .notMatch(
+                            "/user/login",
+                            "/health",
+                            "/error",
+                            "/doc.html",
+                            "/webjars/**",
+                            "/swagger-resources/**",
+                            "/v2/api-docs",
+                            "/v3/api-docs/**"
+                    )
+                    .notMatch(SaHttpMethod.OPTIONS)
+                    .check(r -> StpKit.USER.checkLogin());
+        })).addPathPatterns("/**").excludePathPatterns("/error");
     }
 
     @PostConstruct

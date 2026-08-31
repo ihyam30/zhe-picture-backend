@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { reactive, watch } from 'vue';
 import { ElMessage } from 'element-plus';
 import { uploadPictureBatch } from '@/api/picture';
@@ -75,11 +75,17 @@ async function handleSubmit() {
   <el-dialog
     :model-value="modelValue"
     title="批量创建图片"
-    width="620px"
+    width="640px"
     destroy-on-close
+    class="picture-batch-dialog"
     @close="close"
   >
-    <el-form label-width="104px">
+    <div class="dialog-intro">
+      <div class="dialog-intro-title">根据关键词批量抓取并创建图片</div>
+      <div class="dialog-intro-text">适合快速导入一批素材图，名称前缀可选填。</div>
+    </div>
+
+    <el-form label-width="104px" class="batch-form">
       <el-form-item label="抓取关键词" required>
         <el-input
           v-model="form.searchText"
@@ -89,8 +95,10 @@ async function handleSubmit() {
       </el-form-item>
 
       <el-form-item label="抓取数量" required>
-        <el-input-number v-model="form.count" :min="1" :max="30" :step="1" />
-        <span class="helper-text">后端当前限制单次最多抓取 30 张</span>
+        <div class="count-row">
+          <el-input-number v-model="form.count" :min="1" :max="30" :step="1" />
+          <span class="helper-text">最多抓取 30 张图片</span>
+        </div>
       </el-form-item>
 
       <el-form-item label="名称前缀">
@@ -100,28 +108,93 @@ async function handleSubmit() {
           clearable
         />
       </el-form-item>
-
-      <el-alert
-        title="该功能会调用后端 /picture/upload/batch 接口，从网络图片搜索结果中批量抓取并创建图片。"
-        type="info"
-        :closable="false"
-        show-icon
-      />
     </el-form>
 
     <template #footer>
-      <el-button @click="close">取消</el-button>
-      <el-button type="primary" :loading="submitting.value" @click="handleSubmit">
-        {{ submitting.value ? '批量创建中...' : '开始批量创建' }}
-      </el-button>
+      <div class="dialog-footer">
+        <el-button @click="close">取消</el-button>
+        <el-button type="primary" :loading="submitting.value" @click="handleSubmit">
+          {{ submitting.value ? '批量创建中...' : '开始批量创建' }}
+        </el-button>
+      </div>
     </template>
   </el-dialog>
 </template>
 
 <style scoped>
+.dialog-intro {
+  margin-bottom: 14px;
+}
+
+.dialog-intro-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.dialog-intro-text {
+  margin-top: 6px;
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--text-secondary);
+}
+
+.batch-form {
+  padding-top: 2px;
+}
+
+.count-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
 .helper-text {
-  margin-left: 12px;
   font-size: 13px;
   color: var(--text-secondary);
+}
+
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+:deep(.picture-batch-dialog .el-dialog) {
+  border-radius: 26px;
+  overflow: hidden;
+}
+
+:deep(.picture-batch-dialog .el-dialog__header) {
+  padding: 24px 28px 10px;
+}
+
+:deep(.picture-batch-dialog .el-dialog__title) {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+:deep(.picture-batch-dialog .el-dialog__body) {
+  padding: 0 28px 16px;
+}
+
+:deep(.picture-batch-dialog .el-dialog__footer) {
+  padding: 8px 28px 24px;
+}
+
+:deep(.el-form-item) {
+  margin-bottom: 20px;
+}
+
+:deep(.el-form-item__label) {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+:deep(.el-input__wrapper),
+:deep(.el-input-number),
+:deep(.el-input-number .el-input__wrapper) {
+  border-radius: 16px;
 }
 </style>
