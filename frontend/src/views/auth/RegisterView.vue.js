@@ -33,49 +33,56 @@ debugger; /* PartiallyEnd: #3632/scriptSetup.vue */
 const __VLS_ctx = {};
 let __VLS_components;
 let __VLS_directives;
-/** @type {__VLS_StyleScopedClasses['showcase-logo']} */ ;
-/** @type {__VLS_StyleScopedClasses['register-copy']} */ ;
-/** @type {__VLS_StyleScopedClasses['register-copy']} */ ;
-/** @type {__VLS_StyleScopedClasses['register-copy']} */ ;
-/** @type {__VLS_StyleScopedClasses['auth-panel']} */ ;
+/** @type {__VLS_StyleScopedClasses['brand-logo']} */ ;
+/** @type {__VLS_StyleScopedClasses['aside-copy']} */ ;
+/** @type {__VLS_StyleScopedClasses['aside-copy']} */ ;
+/** @type {__VLS_StyleScopedClasses['auth-card']} */ ;
 /** @type {__VLS_StyleScopedClasses['auth-shell']} */ ;
+/** @type {__VLS_StyleScopedClasses['auth-main']} */ ;
+/** @type {__VLS_StyleScopedClasses['auth-aside']} */ ;
+/** @type {__VLS_StyleScopedClasses['aside-copy']} */ ;
 // CSS variable injection 
 // CSS variable injection end 
 __VLS_asFunctionalElement(__VLS_intrinsicElements.div, __VLS_intrinsicElements.div)({
-    ...{ class: "auth-shell register-shell" },
+    ...{ class: "auth-shell auth-shell--register" },
 });
 __VLS_asFunctionalElement(__VLS_intrinsicElements.section, __VLS_intrinsicElements.section)({
-    ...{ class: "register-intro" },
+    ...{ class: "auth-aside" },
 });
 __VLS_asFunctionalElement(__VLS_intrinsicElements.div, __VLS_intrinsicElements.div)({
-    ...{ class: "showcase-brand" },
+    ...{ class: "brand-row" },
 });
 __VLS_asFunctionalElement(__VLS_intrinsicElements.div, __VLS_intrinsicElements.div)({
-    ...{ class: "showcase-logo" },
+    ...{ class: "brand-logo" },
 });
 __VLS_asFunctionalElement(__VLS_intrinsicElements.span, __VLS_intrinsicElements.span)({});
 (__VLS_ctx.APP_TITLE);
 __VLS_asFunctionalElement(__VLS_intrinsicElements.div, __VLS_intrinsicElements.div)({
-    ...{ class: "register-copy" },
+    ...{ class: "aside-copy" },
 });
 __VLS_asFunctionalElement(__VLS_intrinsicElements.div, __VLS_intrinsicElements.div)({
-    ...{ class: "auth-caption" },
+    ...{ class: "auth-kicker" },
 });
 __VLS_asFunctionalElement(__VLS_intrinsicElements.h1, __VLS_intrinsicElements.h1)({});
 __VLS_asFunctionalElement(__VLS_intrinsicElements.p, __VLS_intrinsicElements.p)({});
-__VLS_asFunctionalElement(__VLS_intrinsicElements.ul, __VLS_intrinsicElements.ul)({});
-__VLS_asFunctionalElement(__VLS_intrinsicElements.li, __VLS_intrinsicElements.li)({});
-__VLS_asFunctionalElement(__VLS_intrinsicElements.li, __VLS_intrinsicElements.li)({});
-__VLS_asFunctionalElement(__VLS_intrinsicElements.li, __VLS_intrinsicElements.li)({});
-__VLS_asFunctionalElement(__VLS_intrinsicElements.section, __VLS_intrinsicElements.section)({
-    ...{ class: "auth-panel-wrap" },
+__VLS_asFunctionalElement(__VLS_intrinsicElements.div, __VLS_intrinsicElements.div)({
+    ...{ class: "aside-notes" },
 });
 __VLS_asFunctionalElement(__VLS_intrinsicElements.div, __VLS_intrinsicElements.div)({
-    ...{ class: "auth-panel surface-panel" },
+    ...{ class: "aside-note" },
+});
+__VLS_asFunctionalElement(__VLS_intrinsicElements.div, __VLS_intrinsicElements.div)({
+    ...{ class: "aside-note" },
+});
+__VLS_asFunctionalElement(__VLS_intrinsicElements.section, __VLS_intrinsicElements.section)({
+    ...{ class: "auth-main" },
+});
+__VLS_asFunctionalElement(__VLS_intrinsicElements.div, __VLS_intrinsicElements.div)({
+    ...{ class: "auth-card surface-panel" },
 });
 __VLS_asFunctionalElement(__VLS_intrinsicElements.div, __VLS_intrinsicElements.div)({});
 __VLS_asFunctionalElement(__VLS_intrinsicElements.div, __VLS_intrinsicElements.div)({
-    ...{ class: "auth-caption" },
+    ...{ class: "auth-kicker" },
 });
 __VLS_asFunctionalElement(__VLS_intrinsicElements.h2, __VLS_intrinsicElements.h2)({});
 __VLS_asFunctionalElement(__VLS_intrinsicElements.p, __VLS_intrinsicElements.p)({
@@ -86,9 +93,11 @@ const __VLS_0 = {}.ElForm;
 // @ts-ignore
 const __VLS_1 = __VLS_asFunctionalComponent(__VLS_0, new __VLS_0({
     ...{ 'onSubmit': {} },
+    labelPosition: "top",
 }));
 const __VLS_2 = __VLS_1({
     ...{ 'onSubmit': {} },
+    labelPosition: "top",
 }, ...__VLS_functionalComponentArgsRest(__VLS_1));
 let __VLS_4;
 let __VLS_5;
@@ -114,11 +123,13 @@ const __VLS_13 = __VLS_asFunctionalComponent(__VLS_12, new __VLS_12({
     modelValue: (__VLS_ctx.form.userAccount),
     placeholder: "请输入账号",
     size: "large",
+    clearable: true,
 }));
 const __VLS_14 = __VLS_13({
     modelValue: (__VLS_ctx.form.userAccount),
     placeholder: "请输入账号",
     size: "large",
+    clearable: true,
 }, ...__VLS_functionalComponentArgsRest(__VLS_13));
 var __VLS_11;
 const __VLS_16 = {}.ElFormItem;
@@ -138,12 +149,14 @@ const __VLS_21 = __VLS_asFunctionalComponent(__VLS_20, new __VLS_20({
     modelValue: (__VLS_ctx.form.userPassword),
     type: "password",
     showPassword: true,
+    placeholder: "请输入密码",
     size: "large",
 }));
 const __VLS_22 = __VLS_21({
     modelValue: (__VLS_ctx.form.userPassword),
     type: "password",
     showPassword: true,
+    placeholder: "请输入密码",
     size: "large",
 }, ...__VLS_functionalComponentArgsRest(__VLS_21));
 var __VLS_19;
@@ -165,6 +178,7 @@ const __VLS_29 = __VLS_asFunctionalComponent(__VLS_28, new __VLS_28({
     modelValue: (__VLS_ctx.form.checkPassword),
     type: "password",
     showPassword: true,
+    placeholder: "请再次输入密码",
     size: "large",
 }));
 const __VLS_30 = __VLS_29({
@@ -172,6 +186,7 @@ const __VLS_30 = __VLS_29({
     modelValue: (__VLS_ctx.form.checkPassword),
     type: "password",
     showPassword: true,
+    placeholder: "请再次输入密码",
     size: "large",
 }, ...__VLS_functionalComponentArgsRest(__VLS_29));
 let __VLS_32;
@@ -190,14 +205,14 @@ const __VLS_37 = __VLS_asFunctionalComponent(__VLS_36, new __VLS_36({
     type: "primary",
     size: "large",
     loading: (__VLS_ctx.loading),
-    ...{ style: {} },
+    ...{ class: "auth-submit" },
 }));
 const __VLS_38 = __VLS_37({
     ...{ 'onClick': {} },
     type: "primary",
     size: "large",
     loading: (__VLS_ctx.loading),
-    ...{ style: {} },
+    ...{ class: "auth-submit" },
 }, ...__VLS_functionalComponentArgsRest(__VLS_37));
 let __VLS_40;
 let __VLS_41;
@@ -226,17 +241,21 @@ const __VLS_46 = __VLS_45({
 __VLS_47.slots.default;
 var __VLS_47;
 /** @type {__VLS_StyleScopedClasses['auth-shell']} */ ;
-/** @type {__VLS_StyleScopedClasses['register-shell']} */ ;
-/** @type {__VLS_StyleScopedClasses['register-intro']} */ ;
-/** @type {__VLS_StyleScopedClasses['showcase-brand']} */ ;
-/** @type {__VLS_StyleScopedClasses['showcase-logo']} */ ;
-/** @type {__VLS_StyleScopedClasses['register-copy']} */ ;
-/** @type {__VLS_StyleScopedClasses['auth-caption']} */ ;
-/** @type {__VLS_StyleScopedClasses['auth-panel-wrap']} */ ;
-/** @type {__VLS_StyleScopedClasses['auth-panel']} */ ;
+/** @type {__VLS_StyleScopedClasses['auth-shell--register']} */ ;
+/** @type {__VLS_StyleScopedClasses['auth-aside']} */ ;
+/** @type {__VLS_StyleScopedClasses['brand-row']} */ ;
+/** @type {__VLS_StyleScopedClasses['brand-logo']} */ ;
+/** @type {__VLS_StyleScopedClasses['aside-copy']} */ ;
+/** @type {__VLS_StyleScopedClasses['auth-kicker']} */ ;
+/** @type {__VLS_StyleScopedClasses['aside-notes']} */ ;
+/** @type {__VLS_StyleScopedClasses['aside-note']} */ ;
+/** @type {__VLS_StyleScopedClasses['aside-note']} */ ;
+/** @type {__VLS_StyleScopedClasses['auth-main']} */ ;
+/** @type {__VLS_StyleScopedClasses['auth-card']} */ ;
 /** @type {__VLS_StyleScopedClasses['surface-panel']} */ ;
-/** @type {__VLS_StyleScopedClasses['auth-caption']} */ ;
+/** @type {__VLS_StyleScopedClasses['auth-kicker']} */ ;
 /** @type {__VLS_StyleScopedClasses['auth-desc']} */ ;
+/** @type {__VLS_StyleScopedClasses['auth-submit']} */ ;
 /** @type {__VLS_StyleScopedClasses['auth-footer']} */ ;
 /** @type {__VLS_StyleScopedClasses['muted-text']} */ ;
 var __VLS_dollars;

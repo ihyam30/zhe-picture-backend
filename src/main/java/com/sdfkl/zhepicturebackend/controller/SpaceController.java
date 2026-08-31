@@ -10,6 +10,7 @@ import com.sdfkl.zhepicturebackend.common.ResultUtils;
 import com.sdfkl.zhepicturebackend.constant.UserConstant;
 import com.sdfkl.zhepicturebackend.exception.ErrorCode;
 import com.sdfkl.zhepicturebackend.exception.ThrowUtils;
+import com.sdfkl.zhepicturebackend.manager.auth.CurrentUserService;
 import com.sdfkl.zhepicturebackend.manager.auth.SpaceUserAuthManager;
 import com.sdfkl.zhepicturebackend.model.dto.space.*;
 import com.sdfkl.zhepicturebackend.model.entity.Space;
@@ -17,7 +18,6 @@ import com.sdfkl.zhepicturebackend.model.entity.User;
 import com.sdfkl.zhepicturebackend.model.enums.SpaceLevelEnum;
 import com.sdfkl.zhepicturebackend.model.vo.SpaceVO;
 import com.sdfkl.zhepicturebackend.service.SpaceService;
-import com.sdfkl.zhepicturebackend.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.web.bind.annotation.*;
@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class SpaceController {
     @Resource
-    private UserService userService;
+    private CurrentUserService currentUserService;
 
     @Resource
     private SpaceService spaceService;
@@ -55,7 +55,7 @@ public class SpaceController {
         if(deleteRequest == null || deleteRequest.getId() <= 0){
             return ResultUtils.error(ErrorCode.PARAMS_ERROR);
         }
-        User loginUser = userService.getLoginUser(request);
+        User loginUser = currentUserService.getRequiredUser();
         Long id = deleteRequest.getId();
         Space oldSpace = spaceService.getById(id);
         ThrowUtils.throwIf(oldSpace == null, ErrorCode.NOT_FOUND_ERROR, "空间不存在");
@@ -87,7 +87,7 @@ public class SpaceController {
         Space oldSpace = spaceService.getById(id);
         ThrowUtils.throwIf(oldSpace == null, ErrorCode.NOT_FOUND_ERROR, "空间不存在");
         // 填充审核参数
-        User loginUser = userService.getLoginUser(request);
+        User loginUser = currentUserService.getRequiredUser();
         spaceService.fillSpaceBySpaceLevel(space);
         // 操作数据库
         boolean result = spaceService.updateById(space);
@@ -124,7 +124,7 @@ public class SpaceController {
         Space space = spaceService.getById(id);
         ThrowUtils.throwIf(space == null, ErrorCode.NOT_FOUND_ERROR, "空间不存在");
         SpaceVO spaceVO = spaceService.getSpaceVO(space, request);
-        User loginUser = userService.getLoginUser(request);
+        User loginUser = currentUserService.getRequiredUser();
         List<String> permissionList = spaceUserAuthManager.getPermissionList(space, loginUser);
         spaceVO.setPermissionList(permissionList);
         // 获取空间信息
@@ -182,7 +182,7 @@ public class SpaceController {
         space.setEditTime(new Date());
         // 数据校验
         spaceService.validSpace(space,false);
-        User loginUser = userService.getLoginUser(request);
+        User loginUser = currentUserService.getRequiredUser();
         // 判断是否存在
         Long id = spaceEditRequest.getId();
         Space oldSpace = spaceService.getById(id);
@@ -208,7 +208,7 @@ public class SpaceController {
         if(spaceAddRequest == null){
             return ResultUtils.error(ErrorCode.PARAMS_ERROR);
         }
-        User loginUser = userService.getLoginUser(request);
+        User loginUser = currentUserService.getRequiredUser();
         long newSpaceId = spaceService.addSpace(spaceAddRequest, loginUser);
         return ResultUtils.success(newSpaceId);
     }

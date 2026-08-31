@@ -2,6 +2,7 @@ package com.sdfkl.zhepicturebackend.manager.websocket;
 
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
+import com.sdfkl.zhepicturebackend.manager.auth.CurrentUserService;
 import com.sdfkl.zhepicturebackend.manager.auth.SpaceUserAuthManager;
 import com.sdfkl.zhepicturebackend.manager.auth.model.SpaceUserPermissionConstant;
 import com.sdfkl.zhepicturebackend.model.entity.Picture;
@@ -10,7 +11,6 @@ import com.sdfkl.zhepicturebackend.model.entity.User;
 import com.sdfkl.zhepicturebackend.model.enums.SpaceTypeEnum;
 import com.sdfkl.zhepicturebackend.service.PictureService;
 import com.sdfkl.zhepicturebackend.service.SpaceService;
-import com.sdfkl.zhepicturebackend.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
@@ -29,7 +29,7 @@ import java.util.Objects;
 @Component
 public class WsHandshakeInterceptor implements HandshakeInterceptor {
     @Resource
-    private UserService userService;
+    private CurrentUserService currentUserService;
 
     @Resource
     private PictureService pictureService;
@@ -51,7 +51,7 @@ public class WsHandshakeInterceptor implements HandshakeInterceptor {
                 return false;
             }
             // 获取当前登录用户
-            User loginUser = userService.getLoginUser(httpServletRequest);
+            User loginUser = currentUserService.getRequiredUser();
             if (ObjUtil.isEmpty(loginUser)) {
                 log.error("用户未登录，拒绝握手");
                 return false;

@@ -11,6 +11,7 @@ import com.sdfkl.zhepicturebackend.constant.UserConstant;
 import com.sdfkl.zhepicturebackend.exception.BusinessException;
 import com.sdfkl.zhepicturebackend.exception.ErrorCode;
 import com.sdfkl.zhepicturebackend.exception.ThrowUtils;
+import com.sdfkl.zhepicturebackend.manager.auth.CurrentUserService;
 import com.sdfkl.zhepicturebackend.model.dto.space.*;
 import com.sdfkl.zhepicturebackend.model.dto.space.analyze.*;
 import com.sdfkl.zhepicturebackend.model.entity.Space;
@@ -20,7 +21,6 @@ import com.sdfkl.zhepicturebackend.model.vo.SpaceVO;
 import com.sdfkl.zhepicturebackend.model.vo.space.analyze.*;
 import com.sdfkl.zhepicturebackend.service.SpaceAnalyzeService;
 import com.sdfkl.zhepicturebackend.service.SpaceService;
-import com.sdfkl.zhepicturebackend.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
@@ -36,7 +36,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class SpaceAnalyzeController {
     @Resource
-    private UserService userService;
+    private CurrentUserService currentUserService;
 
     @Resource
     private SpaceAnalyzeService spaceAnalyzeService;
@@ -52,7 +52,7 @@ public class SpaceAnalyzeController {
         if (spaceUsageAnalyzeRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        User loginUser = userService.getLoginUser(request);
+        User loginUser = currentUserService.getRequiredUser();
         SpaceUsageAnalyzeResponse response = spaceAnalyzeService.getSpaceUsageAnalyze(spaceUsageAnalyzeRequest, loginUser);
         return ResultUtils.success(response);
     }
@@ -68,7 +68,7 @@ public class SpaceAnalyzeController {
         if (spaceCategoryAnalyzeRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        User loginUser = userService.getLoginUser(request);
+        User loginUser = currentUserService.getRequiredUser();
         List<SpaceCategoryAnalyzeResponse> responses = spaceAnalyzeService.getSpaceCategoryAnalyze(spaceCategoryAnalyzeRequest, loginUser);
         return ResultUtils.success(responses);
     }
@@ -85,7 +85,7 @@ public class SpaceAnalyzeController {
         if (spaceTagAnalyzeRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        User loginUser = userService.getLoginUser(request);
+        User loginUser = currentUserService.getRequiredUser();
         List<SpaceTagAnalyzeResponse> responses = spaceAnalyzeService.getSpaceTagAnalyze(spaceTagAnalyzeRequest, loginUser);
         return ResultUtils.success(responses);
     }
@@ -101,7 +101,7 @@ public class SpaceAnalyzeController {
         if (spaceSizeAnalyzeRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        User loginUser = userService.getLoginUser(request);
+        User loginUser = currentUserService.getRequiredUser();
         List<SpaceSizeAnalyzeResponse> responses = spaceAnalyzeService.getSpaceSizeAnalyze(spaceSizeAnalyzeRequest, loginUser);
         return ResultUtils.success(responses);
     }
@@ -117,7 +117,7 @@ public class SpaceAnalyzeController {
         if (spaceUserAnalyzeRequest == null){
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        User loginUser = userService.getLoginUser(request);
+        User loginUser = currentUserService.getRequiredUser();
         List<SpaceUserAnalyzeResponse> responses = spaceAnalyzeService.getSpaceUserAnalyze(spaceUserAnalyzeRequest, loginUser);
         return ResultUtils.success(responses);
     }
@@ -133,7 +133,7 @@ public class SpaceAnalyzeController {
         if (spaceRankAnalyzeRequest == null){
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        User loginUser = userService.getLoginUser(request);
+        User loginUser = currentUserService.getRequiredUser();
         List<Space> responses = spaceAnalyzeService.getSpaceRankAnalyze(spaceRankAnalyzeRequest, loginUser);
         return ResultUtils.success(responses);
     }

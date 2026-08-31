@@ -97,6 +97,13 @@ const __VLS_withDefaultsArg = (function (t) { return t; })({
 const __VLS_ctx = {};
 let __VLS_components;
 let __VLS_directives;
+/** @type {__VLS_StyleScopedClasses['upload-picker']} */ ;
+/** @type {__VLS_StyleScopedClasses['picture-upload-dialog']} */ ;
+/** @type {__VLS_StyleScopedClasses['picture-upload-dialog']} */ ;
+/** @type {__VLS_StyleScopedClasses['picture-upload-dialog']} */ ;
+/** @type {__VLS_StyleScopedClasses['picture-upload-dialog']} */ ;
+/** @type {__VLS_StyleScopedClasses['el-textarea__inner']} */ ;
+/** @type {__VLS_StyleScopedClasses['upload-form-grid']} */ ;
 // CSS variable injection 
 // CSS variable injection end 
 const __VLS_0 = {}.ElDialog;
@@ -106,15 +113,17 @@ const __VLS_1 = __VLS_asFunctionalComponent(__VLS_0, new __VLS_0({
     ...{ 'onClose': {} },
     modelValue: (__VLS_ctx.modelValue),
     title: "创建图片",
-    width: "760px",
+    width: "820px",
     destroyOnClose: true,
+    ...{ class: "picture-upload-dialog" },
 }));
 const __VLS_2 = __VLS_1({
     ...{ 'onClose': {} },
     modelValue: (__VLS_ctx.modelValue),
     title: "创建图片",
-    width: "760px",
+    width: "820px",
     destroyOnClose: true,
+    ...{ class: "picture-upload-dialog" },
 }, ...__VLS_functionalComponentArgsRest(__VLS_1));
 let __VLS_4;
 let __VLS_5;
@@ -124,14 +133,25 @@ const __VLS_7 = {
 };
 var __VLS_8 = {};
 __VLS_3.slots.default;
+__VLS_asFunctionalElement(__VLS_intrinsicElements.div, __VLS_intrinsicElements.div)({
+    ...{ class: "dialog-intro" },
+});
+__VLS_asFunctionalElement(__VLS_intrinsicElements.div, __VLS_intrinsicElements.div)({
+    ...{ class: "dialog-intro-title" },
+});
+__VLS_asFunctionalElement(__VLS_intrinsicElements.div, __VLS_intrinsicElements.div)({
+    ...{ class: "dialog-intro-text" },
+});
 const __VLS_9 = {}.ElTabs;
 /** @type {[typeof __VLS_components.ElTabs, typeof __VLS_components.elTabs, typeof __VLS_components.ElTabs, typeof __VLS_components.elTabs, ]} */ ;
 // @ts-ignore
 const __VLS_10 = __VLS_asFunctionalComponent(__VLS_9, new __VLS_9({
     modelValue: (__VLS_ctx.form.sourceType),
+    ...{ class: "upload-tabs" },
 }));
 const __VLS_11 = __VLS_10({
     modelValue: (__VLS_ctx.form.sourceType),
+    ...{ class: "upload-tabs" },
 }, ...__VLS_functionalComponentArgsRest(__VLS_10));
 __VLS_12.slots.default;
 const __VLS_13 = {}.ElTabPane;
@@ -161,10 +181,12 @@ const __VLS_21 = {}.ElForm;
 /** @type {[typeof __VLS_components.ElForm, typeof __VLS_components.elForm, typeof __VLS_components.ElForm, typeof __VLS_components.elForm, ]} */ ;
 // @ts-ignore
 const __VLS_22 = __VLS_asFunctionalComponent(__VLS_21, new __VLS_21({
-    labelWidth: "96px",
+    labelWidth: "92px",
+    ...{ class: "upload-form" },
 }));
 const __VLS_23 = __VLS_22({
-    labelWidth: "96px",
+    labelWidth: "92px",
+    ...{ class: "upload-form" },
 }, ...__VLS_functionalComponentArgsRest(__VLS_22));
 __VLS_24.slots.default;
 if (__VLS_ctx.form.sourceType === 'local') {
@@ -190,6 +212,7 @@ if (__VLS_ctx.form.sourceType === 'local') {
         fileList: (__VLS_ctx.fileList),
         listType: "picture-card",
         accept: "image/*",
+        ...{ class: "upload-picker" },
     }));
     const __VLS_31 = __VLS_30({
         ...{ 'onChange': {} },
@@ -198,6 +221,7 @@ if (__VLS_ctx.form.sourceType === 'local') {
         fileList: (__VLS_ctx.fileList),
         listType: "picture-card",
         accept: "image/*",
+        ...{ class: "upload-picker" },
     }, ...__VLS_functionalComponentArgsRest(__VLS_30));
     let __VLS_33;
     let __VLS_34;
@@ -206,7 +230,9 @@ if (__VLS_ctx.form.sourceType === 'local') {
         onChange: (__VLS_ctx.handleFileChange)
     };
     __VLS_32.slots.default;
-    __VLS_asFunctionalElement(__VLS_intrinsicElements.span, __VLS_intrinsicElements.span)({});
+    __VLS_asFunctionalElement(__VLS_intrinsicElements.div, __VLS_intrinsicElements.div)({
+        ...{ class: "upload-picker-text" },
+    });
     var __VLS_32;
     var __VLS_28;
 }
@@ -288,102 +314,99 @@ var __VLS_56;
 const __VLS_60 = {}.ElFormItem;
 /** @type {[typeof __VLS_components.ElFormItem, typeof __VLS_components.elFormItem, typeof __VLS_components.ElFormItem, typeof __VLS_components.elFormItem, ]} */ ;
 // @ts-ignore
-const __VLS_61 = __VLS_asFunctionalComponent(__VLS_60, new __VLS_60({}));
-const __VLS_62 = __VLS_61({}, ...__VLS_functionalComponentArgsRest(__VLS_61));
-__VLS_63.slots.default;
-__VLS_asFunctionalElement(__VLS_intrinsicElements.div, __VLS_intrinsicElements.div)({
-    ...{ class: "upload-space-tip" },
-});
-var __VLS_63;
-const __VLS_64 = {}.ElFormItem;
-/** @type {[typeof __VLS_components.ElFormItem, typeof __VLS_components.elFormItem, typeof __VLS_components.ElFormItem, typeof __VLS_components.elFormItem, ]} */ ;
-// @ts-ignore
-const __VLS_65 = __VLS_asFunctionalComponent(__VLS_64, new __VLS_64({
+const __VLS_61 = __VLS_asFunctionalComponent(__VLS_60, new __VLS_60({
     label: "图片简介",
 }));
-const __VLS_66 = __VLS_65({
+const __VLS_62 = __VLS_61({
     label: "图片简介",
-}, ...__VLS_functionalComponentArgsRest(__VLS_65));
-__VLS_67.slots.default;
-const __VLS_68 = {}.ElInput;
+}, ...__VLS_functionalComponentArgsRest(__VLS_61));
+__VLS_63.slots.default;
+const __VLS_64 = {}.ElInput;
 /** @type {[typeof __VLS_components.ElInput, typeof __VLS_components.elInput, ]} */ ;
 // @ts-ignore
-const __VLS_69 = __VLS_asFunctionalComponent(__VLS_68, new __VLS_68({
+const __VLS_65 = __VLS_asFunctionalComponent(__VLS_64, new __VLS_64({
     modelValue: (__VLS_ctx.form.introduction),
     type: "textarea",
     rows: (3),
     maxlength: "240",
     showWordLimit: true,
     placeholder: "可以补充来源、用途或备注信息",
+}));
+const __VLS_66 = __VLS_65({
+    modelValue: (__VLS_ctx.form.introduction),
+    type: "textarea",
+    rows: (3),
+    maxlength: "240",
+    showWordLimit: true,
+    placeholder: "可以补充来源、用途或备注信息",
+}, ...__VLS_functionalComponentArgsRest(__VLS_65));
+var __VLS_63;
+__VLS_asFunctionalElement(__VLS_intrinsicElements.div, __VLS_intrinsicElements.div)({
+    ...{ class: "upload-form-grid" },
+});
+const __VLS_68 = {}.ElFormItem;
+/** @type {[typeof __VLS_components.ElFormItem, typeof __VLS_components.elFormItem, typeof __VLS_components.ElFormItem, typeof __VLS_components.elFormItem, ]} */ ;
+// @ts-ignore
+const __VLS_69 = __VLS_asFunctionalComponent(__VLS_68, new __VLS_68({
+    label: "分类",
+    ...{ class: "upload-form-grid-item" },
 }));
 const __VLS_70 = __VLS_69({
-    modelValue: (__VLS_ctx.form.introduction),
-    type: "textarea",
-    rows: (3),
-    maxlength: "240",
-    showWordLimit: true,
-    placeholder: "可以补充来源、用途或备注信息",
+    label: "分类",
+    ...{ class: "upload-form-grid-item" },
 }, ...__VLS_functionalComponentArgsRest(__VLS_69));
-var __VLS_67;
-const __VLS_72 = {}.ElFormItem;
-/** @type {[typeof __VLS_components.ElFormItem, typeof __VLS_components.elFormItem, typeof __VLS_components.ElFormItem, typeof __VLS_components.elFormItem, ]} */ ;
+__VLS_71.slots.default;
+const __VLS_72 = {}.ElSelect;
+/** @type {[typeof __VLS_components.ElSelect, typeof __VLS_components.elSelect, typeof __VLS_components.ElSelect, typeof __VLS_components.elSelect, ]} */ ;
 // @ts-ignore
 const __VLS_73 = __VLS_asFunctionalComponent(__VLS_72, new __VLS_72({
-    label: "分类",
+    modelValue: (__VLS_ctx.form.category),
+    clearable: true,
+    filterable: true,
+    ...{ style: {} },
+    placeholder: "请选择分类",
 }));
 const __VLS_74 = __VLS_73({
-    label: "分类",
+    modelValue: (__VLS_ctx.form.category),
+    clearable: true,
+    filterable: true,
+    ...{ style: {} },
+    placeholder: "请选择分类",
 }, ...__VLS_functionalComponentArgsRest(__VLS_73));
 __VLS_75.slots.default;
-const __VLS_76 = {}.ElSelect;
-/** @type {[typeof __VLS_components.ElSelect, typeof __VLS_components.elSelect, typeof __VLS_components.ElSelect, typeof __VLS_components.elSelect, ]} */ ;
-// @ts-ignore
-const __VLS_77 = __VLS_asFunctionalComponent(__VLS_76, new __VLS_76({
-    modelValue: (__VLS_ctx.form.category),
-    clearable: true,
-    filterable: true,
-    ...{ style: {} },
-    placeholder: "请选择分类",
-}));
-const __VLS_78 = __VLS_77({
-    modelValue: (__VLS_ctx.form.category),
-    clearable: true,
-    filterable: true,
-    ...{ style: {} },
-    placeholder: "请选择分类",
-}, ...__VLS_functionalComponentArgsRest(__VLS_77));
-__VLS_79.slots.default;
 for (const [item] of __VLS_getVForSourceType((__VLS_ctx.categoryOptions))) {
-    const __VLS_80 = {}.ElOption;
+    const __VLS_76 = {}.ElOption;
     /** @type {[typeof __VLS_components.ElOption, typeof __VLS_components.elOption, ]} */ ;
     // @ts-ignore
-    const __VLS_81 = __VLS_asFunctionalComponent(__VLS_80, new __VLS_80({
+    const __VLS_77 = __VLS_asFunctionalComponent(__VLS_76, new __VLS_76({
         key: (item),
         label: (item),
         value: (item),
     }));
-    const __VLS_82 = __VLS_81({
+    const __VLS_78 = __VLS_77({
         key: (item),
         label: (item),
         value: (item),
-    }, ...__VLS_functionalComponentArgsRest(__VLS_81));
+    }, ...__VLS_functionalComponentArgsRest(__VLS_77));
 }
-var __VLS_79;
 var __VLS_75;
-const __VLS_84 = {}.ElFormItem;
+var __VLS_71;
+const __VLS_80 = {}.ElFormItem;
 /** @type {[typeof __VLS_components.ElFormItem, typeof __VLS_components.elFormItem, typeof __VLS_components.ElFormItem, typeof __VLS_components.elFormItem, ]} */ ;
 // @ts-ignore
-const __VLS_85 = __VLS_asFunctionalComponent(__VLS_84, new __VLS_84({
+const __VLS_81 = __VLS_asFunctionalComponent(__VLS_80, new __VLS_80({
     label: "标签",
+    ...{ class: "upload-form-grid-item" },
 }));
-const __VLS_86 = __VLS_85({
+const __VLS_82 = __VLS_81({
     label: "标签",
-}, ...__VLS_functionalComponentArgsRest(__VLS_85));
-__VLS_87.slots.default;
-const __VLS_88 = {}.ElSelect;
+    ...{ class: "upload-form-grid-item" },
+}, ...__VLS_functionalComponentArgsRest(__VLS_81));
+__VLS_83.slots.default;
+const __VLS_84 = {}.ElSelect;
 /** @type {[typeof __VLS_components.ElSelect, typeof __VLS_components.elSelect, typeof __VLS_components.ElSelect, typeof __VLS_components.elSelect, ]} */ ;
 // @ts-ignore
-const __VLS_89 = __VLS_asFunctionalComponent(__VLS_88, new __VLS_88({
+const __VLS_85 = __VLS_asFunctionalComponent(__VLS_84, new __VLS_84({
     modelValue: (__VLS_ctx.form.tags),
     multiple: true,
     filterable: true,
@@ -392,7 +415,7 @@ const __VLS_89 = __VLS_asFunctionalComponent(__VLS_88, new __VLS_88({
     ...{ style: {} },
     placeholder: "选择或输入标签",
 }));
-const __VLS_90 = __VLS_89({
+const __VLS_86 = __VLS_85({
     modelValue: (__VLS_ctx.form.tags),
     multiple: true,
     filterable: true,
@@ -400,85 +423,84 @@ const __VLS_90 = __VLS_89({
     defaultFirstOption: true,
     ...{ style: {} },
     placeholder: "选择或输入标签",
-}, ...__VLS_functionalComponentArgsRest(__VLS_89));
-__VLS_91.slots.default;
+}, ...__VLS_functionalComponentArgsRest(__VLS_85));
+__VLS_87.slots.default;
 for (const [item] of __VLS_getVForSourceType((__VLS_ctx.tagOptions))) {
-    const __VLS_92 = {}.ElOption;
+    const __VLS_88 = {}.ElOption;
     /** @type {[typeof __VLS_components.ElOption, typeof __VLS_components.elOption, ]} */ ;
     // @ts-ignore
-    const __VLS_93 = __VLS_asFunctionalComponent(__VLS_92, new __VLS_92({
+    const __VLS_89 = __VLS_asFunctionalComponent(__VLS_88, new __VLS_88({
         key: (item),
         label: (item),
         value: (item),
     }));
-    const __VLS_94 = __VLS_93({
+    const __VLS_90 = __VLS_89({
         key: (item),
         label: (item),
         value: (item),
-    }, ...__VLS_functionalComponentArgsRest(__VLS_93));
+    }, ...__VLS_functionalComponentArgsRest(__VLS_89));
 }
-var __VLS_91;
 var __VLS_87;
-const __VLS_96 = {}.ElAlert;
-/** @type {[typeof __VLS_components.ElAlert, typeof __VLS_components.elAlert, ]} */ ;
-// @ts-ignore
-const __VLS_97 = __VLS_asFunctionalComponent(__VLS_96, new __VLS_96({
-    title: "上传接口主要接收文件、名称与空间。分类、标签和简介会在上传成功后自动补发编辑请求写入。",
-    type: "info",
-    closable: (false),
-    showIcon: true,
-}));
-const __VLS_98 = __VLS_97({
-    title: "上传接口主要接收文件、名称与空间。分类、标签和简介会在上传成功后自动补发编辑请求写入。",
-    type: "info",
-    closable: (false),
-    showIcon: true,
-}, ...__VLS_functionalComponentArgsRest(__VLS_97));
+var __VLS_83;
 var __VLS_24;
 {
     const { footer: __VLS_thisSlot } = __VLS_3.slots;
+    __VLS_asFunctionalElement(__VLS_intrinsicElements.div, __VLS_intrinsicElements.div)({
+        ...{ class: "dialog-footer" },
+    });
+    const __VLS_92 = {}.ElButton;
+    /** @type {[typeof __VLS_components.ElButton, typeof __VLS_components.elButton, typeof __VLS_components.ElButton, typeof __VLS_components.elButton, ]} */ ;
+    // @ts-ignore
+    const __VLS_93 = __VLS_asFunctionalComponent(__VLS_92, new __VLS_92({
+        ...{ 'onClick': {} },
+    }));
+    const __VLS_94 = __VLS_93({
+        ...{ 'onClick': {} },
+    }, ...__VLS_functionalComponentArgsRest(__VLS_93));
+    let __VLS_96;
+    let __VLS_97;
+    let __VLS_98;
+    const __VLS_99 = {
+        onClick: (__VLS_ctx.close)
+    };
+    __VLS_95.slots.default;
+    var __VLS_95;
     const __VLS_100 = {}.ElButton;
     /** @type {[typeof __VLS_components.ElButton, typeof __VLS_components.elButton, typeof __VLS_components.ElButton, typeof __VLS_components.elButton, ]} */ ;
     // @ts-ignore
     const __VLS_101 = __VLS_asFunctionalComponent(__VLS_100, new __VLS_100({
         ...{ 'onClick': {} },
+        type: "primary",
+        loading: (__VLS_ctx.submitting),
     }));
     const __VLS_102 = __VLS_101({
         ...{ 'onClick': {} },
+        type: "primary",
+        loading: (__VLS_ctx.submitting),
     }, ...__VLS_functionalComponentArgsRest(__VLS_101));
     let __VLS_104;
     let __VLS_105;
     let __VLS_106;
     const __VLS_107 = {
-        onClick: (__VLS_ctx.close)
-    };
-    __VLS_103.slots.default;
-    var __VLS_103;
-    const __VLS_108 = {}.ElButton;
-    /** @type {[typeof __VLS_components.ElButton, typeof __VLS_components.elButton, typeof __VLS_components.ElButton, typeof __VLS_components.elButton, ]} */ ;
-    // @ts-ignore
-    const __VLS_109 = __VLS_asFunctionalComponent(__VLS_108, new __VLS_108({
-        ...{ 'onClick': {} },
-        type: "primary",
-        loading: (__VLS_ctx.submitting),
-    }));
-    const __VLS_110 = __VLS_109({
-        ...{ 'onClick': {} },
-        type: "primary",
-        loading: (__VLS_ctx.submitting),
-    }, ...__VLS_functionalComponentArgsRest(__VLS_109));
-    let __VLS_112;
-    let __VLS_113;
-    let __VLS_114;
-    const __VLS_115 = {
         onClick: (__VLS_ctx.handleSubmit)
     };
-    __VLS_111.slots.default;
+    __VLS_103.slots.default;
     (__VLS_ctx.submitting ? '上传中...' : '开始创建');
-    var __VLS_111;
+    var __VLS_103;
 }
 var __VLS_3;
-/** @type {__VLS_StyleScopedClasses['upload-space-tip']} */ ;
+/** @type {__VLS_StyleScopedClasses['picture-upload-dialog']} */ ;
+/** @type {__VLS_StyleScopedClasses['dialog-intro']} */ ;
+/** @type {__VLS_StyleScopedClasses['dialog-intro-title']} */ ;
+/** @type {__VLS_StyleScopedClasses['dialog-intro-text']} */ ;
+/** @type {__VLS_StyleScopedClasses['upload-tabs']} */ ;
+/** @type {__VLS_StyleScopedClasses['upload-form']} */ ;
+/** @type {__VLS_StyleScopedClasses['upload-picker']} */ ;
+/** @type {__VLS_StyleScopedClasses['upload-picker-text']} */ ;
+/** @type {__VLS_StyleScopedClasses['upload-form-grid']} */ ;
+/** @type {__VLS_StyleScopedClasses['upload-form-grid-item']} */ ;
+/** @type {__VLS_StyleScopedClasses['upload-form-grid-item']} */ ;
+/** @type {__VLS_StyleScopedClasses['dialog-footer']} */ ;
 var __VLS_dollars;
 const __VLS_self = (await import('vue')).defineComponent({
     setup() {

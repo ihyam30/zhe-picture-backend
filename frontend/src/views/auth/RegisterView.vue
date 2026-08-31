@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
@@ -35,52 +35,53 @@ async function handleSubmit() {
 </script>
 
 <template>
-  <div class="auth-shell register-shell">
-    <section class="register-intro">
-      <div class="showcase-brand">
-        <div class="showcase-logo"></div>
+  <div class="auth-shell auth-shell--register">
+    <section class="auth-aside">
+      <div class="brand-row">
+        <div class="brand-logo"></div>
         <span>{{ APP_TITLE }}</span>
       </div>
 
-      <div class="register-copy">
-        <div class="auth-caption">账号入口</div>
+      <div class="aside-copy">
+        <div class="auth-kicker">账号入口</div>
         <h1>创建你的云图库账号</h1>
         <p>
-          前端已经对接 `/user/register`。如果后端仍限制管理员才能注册，页面会直接展示后端返回的错误提示，便于你继续联调。
+          注册后即可进入同一套后台工作流。当前页面保留最基础的账号注册能力，方便你继续完成接口联调和权限验证。
         </p>
-        <ul>
-          <li>支持账号密码注册</li>
-          <li>注册成功后直接跳转登录页</li>
-          <li>统一沿用后台白底蓝色的视觉风格</li>
-        </ul>
+
+        <div class="aside-notes">
+          <div class="aside-note">支持账号密码注册，成功后自动返回登录页。</div>
+          <div class="aside-note">如果后端仍限制管理员注册，页面会直接展示后端返回的错误信息。</div>
+        </div>
       </div>
     </section>
 
-    <section class="auth-panel-wrap">
-      <div class="auth-panel surface-panel">
+    <section class="auth-main">
+      <div class="auth-card surface-panel">
         <div>
-          <div class="auth-caption">开始使用</div>
+          <div class="auth-kicker">开始使用</div>
           <h2>注册账号</h2>
           <p class="auth-desc">填写基础信息，创建一个新的系统账号。</p>
         </div>
 
-        <el-form @submit.prevent="handleSubmit">
+        <el-form label-position="top" @submit.prevent="handleSubmit">
           <el-form-item label="账号">
-            <el-input v-model="form.userAccount" placeholder="请输入账号" size="large" />
+            <el-input v-model="form.userAccount" placeholder="请输入账号" size="large" clearable />
           </el-form-item>
           <el-form-item label="密码">
-            <el-input v-model="form.userPassword" type="password" show-password size="large" />
+            <el-input v-model="form.userPassword" type="password" show-password placeholder="请输入密码" size="large" />
           </el-form-item>
           <el-form-item label="确认密码">
             <el-input
               v-model="form.checkPassword"
               type="password"
               show-password
+              placeholder="请再次输入密码"
               size="large"
               @keyup.enter="handleSubmit"
             />
           </el-form-item>
-          <el-button type="primary" size="large" :loading="loading" style="width: 100%" @click="handleSubmit">
+          <el-button type="primary" size="large" :loading="loading" class="auth-submit" @click="handleSubmit">
             注册
           </el-button>
         </el-form>
@@ -98,30 +99,31 @@ async function handleSubmit() {
 .auth-shell {
   min-height: 100vh;
   display: grid;
-  grid-template-columns: 1fr 0.92fr;
+  grid-template-columns: minmax(440px, 1fr) minmax(420px, 520px);
   background:
-    radial-gradient(circle at bottom right, rgba(14, 165, 233, 0.18), transparent 28%),
-    linear-gradient(135deg, #fffef9, #f6f9ff 55%, #eef3fb);
+    radial-gradient(circle at bottom right, rgba(14, 165, 233, 0.16), transparent 30%),
+    linear-gradient(135deg, #fffef9, #f6f9ff 58%, #eef3fb);
 }
 
-.register-intro {
+.auth-aside {
   padding: 44px 56px;
   display: flex;
   flex-direction: column;
 }
 
-.showcase-brand {
+.brand-row {
   display: inline-flex;
   align-items: center;
   gap: 14px;
-  font-size: 32px;
-  font-weight: 700;
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--text-primary);
 }
 
-.showcase-logo {
-  width: 78px;
-  height: 56px;
-  border-radius: 4px;
+.brand-logo {
+  width: 72px;
+  height: 52px;
+  border-radius: 6px;
   background:
     radial-gradient(circle at 32% 52%, #ffffff 0 14px, transparent 15px),
     radial-gradient(circle at 52% 48%, #9fe7ff 0 12px, transparent 13px),
@@ -130,7 +132,7 @@ async function handleSubmit() {
   overflow: hidden;
 }
 
-.showcase-logo::after {
+.brand-logo::after {
   content: '';
   position: absolute;
   inset: auto 14px 10px 12px;
@@ -139,54 +141,66 @@ async function handleSubmit() {
   background: linear-gradient(135deg, #f47cf9, #88e0ff 72%, #ffffff);
 }
 
-.register-copy {
+.aside-copy {
   margin: auto 0;
-  max-width: 720px;
+  max-width: 640px;
 }
 
-.auth-caption {
+.auth-kicker {
   color: var(--primary-color);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
   letter-spacing: 0.12em;
 }
 
-.register-copy h1 {
+.aside-copy h1 {
   margin: 18px 0 16px;
-  font-size: 52px;
-  line-height: 1.14;
+  font-size: 60px;
+  line-height: 1.06;
+  letter-spacing: -0.04em;
 }
 
-.register-copy p {
+.aside-copy p {
   margin: 0;
   color: var(--text-secondary);
-  line-height: 1.9;
+  font-size: 16px;
+  line-height: 1.85;
 }
 
-.register-copy ul {
-  margin: 28px 0 0;
-  padding-left: 20px;
-  color: var(--text-primary);
-  line-height: 2;
+.aside-notes {
+  margin-top: 28px;
+  display: grid;
+  gap: 14px;
 }
 
-.auth-panel-wrap {
+.aside-note {
+  padding: 16px 18px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(47, 109, 246, 0.1);
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+.auth-main {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 48px;
+  padding: 40px 48px 40px 0;
 }
 
-.auth-panel {
-  width: min(520px, 100%);
-  padding: 40px;
+.auth-card {
+  width: min(500px, 100%);
+  padding: 42px 40px;
   display: grid;
-  gap: 24px;
+  gap: 26px;
+  border-radius: 30px;
 }
 
-.auth-panel h2 {
-  margin: 12px 0 8px;
-  font-size: 36px;
+.auth-card h2 {
+  margin: 10px 0 8px;
+  font-size: 34px;
+  line-height: 1.12;
 }
 
 .auth-desc {
@@ -195,15 +209,47 @@ async function handleSubmit() {
   line-height: 1.7;
 }
 
+.auth-submit {
+  width: 100%;
+  margin-top: 6px;
+}
+
 .auth-footer {
   display: flex;
   gap: 10px;
   align-items: center;
 }
 
+:deep(.el-form-item) {
+  margin-bottom: 20px;
+}
+
+:deep(.el-form-item__label) {
+  font-weight: 700;
+  color: var(--text-primary);
+  padding-bottom: 8px;
+}
+
+:deep(.el-input__wrapper) {
+  min-height: 48px;
+  border-radius: 16px;
+}
+
 @media (max-width: 1280px) {
   .auth-shell {
     grid-template-columns: 1fr;
+  }
+
+  .auth-main {
+    padding: 0 24px 32px;
+  }
+
+  .auth-aside {
+    padding: 32px 24px 20px;
+  }
+
+  .aside-copy h1 {
+    font-size: 44px;
   }
 }
 </style>

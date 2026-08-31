@@ -9,6 +9,7 @@ import com.sdfkl.zhepicturebackend.common.ResultUtils;
 import com.sdfkl.zhepicturebackend.constant.UserConstant;
 import com.sdfkl.zhepicturebackend.exception.ErrorCode;
 import com.sdfkl.zhepicturebackend.exception.ThrowUtils;
+import com.sdfkl.zhepicturebackend.manager.auth.CurrentUserService;
 import com.sdfkl.zhepicturebackend.model.dto.user.*;
 import com.sdfkl.zhepicturebackend.model.entity.User;
 import com.sdfkl.zhepicturebackend.model.vo.UserLoginVO;
@@ -17,13 +18,15 @@ import com.sdfkl.zhepicturebackend.service.UserService;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("/user")
 public class UserController {
     @Resource
     private UserService userService;
+
+    @Resource
+    private CurrentUserService currentUserService;
 
     /**
      * 用户注册
@@ -46,9 +49,9 @@ public class UserController {
      * @return 用户登录信息
      */
     @PostMapping("/login")
-    public BaseResponse<UserLoginVO> userLogin(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest request) {
+    public BaseResponse<UserLoginVO> userLogin(@RequestBody UserLoginRequest userLoginRequest) {
         ThrowUtils.throwIf(userLoginRequest == null, ErrorCode.PARAMS_ERROR);
-        UserLoginVO userLoginVO = userService.userLogin(userLoginRequest, request);
+        UserLoginVO userLoginVO = userService.userLogin(userLoginRequest);
         return ResultUtils.success(userLoginVO);
     }
 
@@ -59,8 +62,8 @@ public class UserController {
      * @return 用户
      */
     @GetMapping("/get/login")
-    public BaseResponse<UserLoginVO> getLoginUser(HttpServletRequest request) {
-        User loginUser = userService.getLoginUser(request);
+    public BaseResponse<UserLoginVO> getLoginUser() {
+        User loginUser = currentUserService.getRequiredUser();
         return ResultUtils.success(BeanUtil.copyProperties(loginUser, UserLoginVO.class));
     }
 
@@ -71,9 +74,9 @@ public class UserController {
      * @return 是否登出成功
      */
     @PostMapping("/logout")
-    public BaseResponse<Boolean> userLogout(HttpServletRequest request) {
-        Boolean result = userService.userLogout(request);
-        return ResultUtils.success(result);
+    public BaseResponse<Boolean> userLogout() {
+        currentUserService.logout();
+        return ResultUtils.success(true);
     }
 
     /**
