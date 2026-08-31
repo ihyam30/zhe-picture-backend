@@ -8,6 +8,7 @@ import com.sdfkl.zhepicturebackend.common.ResultUtils;
 import com.sdfkl.zhepicturebackend.exception.BusinessException;
 import com.sdfkl.zhepicturebackend.exception.ErrorCode;
 import com.sdfkl.zhepicturebackend.exception.ThrowUtils;
+import com.sdfkl.zhepicturebackend.manager.auth.CurrentUserService;
 import com.sdfkl.zhepicturebackend.manager.auth.annotation.SaSpaceCheckPermission;
 import com.sdfkl.zhepicturebackend.manager.auth.model.SpaceUserPermissionConstant;
 import com.sdfkl.zhepicturebackend.model.dto.spaceuser.SpaceUserAddRequest;
@@ -17,7 +18,6 @@ import com.sdfkl.zhepicturebackend.model.entity.SpaceUser;
 import com.sdfkl.zhepicturebackend.model.entity.User;
 import com.sdfkl.zhepicturebackend.model.vo.SpaceUserVO;
 import com.sdfkl.zhepicturebackend.service.SpaceUserService;
-import com.sdfkl.zhepicturebackend.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -41,7 +41,7 @@ public class SpaceUserController {
     private SpaceUserService spaceUserService;
 
     @Resource
-    private UserService userService;
+    private CurrentUserService currentUserService;
 
     /**
      * 添加成员到空间
@@ -135,7 +135,7 @@ public class SpaceUserController {
      */
     @PostMapping("/list/my")
     public BaseResponse<List<SpaceUserVO>> listMyTeamSpace(HttpServletRequest request) {
-        User loginUser = userService.getLoginUser(request);
+        User loginUser = currentUserService.getRequiredUser();
         SpaceUserQueryRequest spaceUserQueryRequest = new SpaceUserQueryRequest();
         spaceUserQueryRequest.setUserId(loginUser.getId());
         List<SpaceUser> spaceUserList = spaceUserService.list(

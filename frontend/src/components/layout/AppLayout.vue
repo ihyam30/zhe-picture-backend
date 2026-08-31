@@ -1,15 +1,14 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import {
   DataAnalysis,
   FolderOpened,
   House,
   Picture,
-  Search,
   SwitchButton,
   User,
   UserFilled,
 } from '@element-plus/icons-vue';
-import { computed, ref } from 'vue';
+import { computed } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { useRoute, useRouter } from 'vue-router';
 import { APP_TITLE } from '@/constants/app';
@@ -18,7 +17,6 @@ import { useAuthStore } from '@/store/auth';
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
-const headerKeyword = ref('');
 
 const menuItems = computed(() => {
   const items = [
@@ -41,13 +39,6 @@ const activePath = computed(() => {
 
 function go(path: string) {
   router.push(path);
-}
-
-function handleGlobalSearch() {
-  router.push({
-    path: '/dashboard',
-    query: headerKeyword.value ? { q: headerKeyword.value } : {},
-  });
 }
 
 async function handleLogout() {
@@ -93,18 +84,6 @@ async function handleLogout() {
         </nav>
 
         <div class="header-right">
-          <div class="header-search">
-            <el-input
-              v-model="headerKeyword"
-              placeholder="搜索图片 / 空间 / 标签"
-              clearable
-              @keyup.enter="handleGlobalSearch"
-            >
-              <template #prefix>
-                <el-icon><Search /></el-icon>
-              </template>
-            </el-input>
-          </div>
           <el-dropdown>
             <div class="user-brief">
               <el-avatar :size="42" :src="authStore.user?.userAvatar">
@@ -156,7 +135,7 @@ async function handleLogout() {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
-  gap: 16px;
+  gap: 20px;
 }
 
 .brand {
@@ -225,6 +204,7 @@ async function handleLogout() {
 .top-nav {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 2px;
   flex-wrap: nowrap;
   min-width: 0;
@@ -274,21 +254,7 @@ async function handleLogout() {
 .header-right {
   display: flex;
   align-items: center;
-  gap: 12px;
-  min-width: 0;
-}
-
-.header-search {
-  width: 260px;
-  flex: 0 1 260px;
-}
-
-.header-search :deep(.el-input__wrapper) {
-  min-height: 40px;
-  border-radius: 999px;
-  padding-left: 12px;
-  box-shadow: none;
-  background: #f4f6fb;
+  justify-content: flex-end;
 }
 
 .user-brief {
@@ -317,11 +283,6 @@ async function handleLogout() {
   .app-header-inner {
     width: min(calc(100% - 24px), var(--app-width));
     gap: 12px;
-  }
-
-  .header-search {
-    width: 220px;
-    max-width: 220px;
   }
 
   .user-brief-name {

@@ -183,6 +183,7 @@ debugger; /* PartiallyEnd: #3632/scriptSetup.vue */
 const __VLS_ctx = {};
 let __VLS_components;
 let __VLS_directives;
+/** @type {__VLS_StyleScopedClasses['filter-actions']} */ ;
 /** @type {__VLS_StyleScopedClasses['picture-manage-page']} */ ;
 /** @type {__VLS_StyleScopedClasses['picture-page-header']} */ ;
 /** @type {__VLS_StyleScopedClasses['picture-page-actions']} */ ;
@@ -666,15 +667,15 @@ const __VLS_131 = {}.ElCol;
 /** @type {[typeof __VLS_components.ElCol, typeof __VLS_components.elCol, typeof __VLS_components.ElCol, typeof __VLS_components.elCol, ]} */ ;
 // @ts-ignore
 const __VLS_132 = __VLS_asFunctionalComponent(__VLS_131, new __VLS_131({
-    xl: (6),
-    lg: (7),
+    xl: (5),
+    lg: (6),
     md: (12),
     sm: (12),
     xs: (24),
 }));
 const __VLS_133 = __VLS_132({
-    xl: (6),
-    lg: (7),
+    xl: (5),
+    lg: (6),
     md: (12),
     sm: (12),
     xs: (24),

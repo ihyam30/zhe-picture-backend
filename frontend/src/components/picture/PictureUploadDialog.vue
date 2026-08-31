@@ -124,16 +124,22 @@ async function handleSubmit() {
   <el-dialog
     :model-value="modelValue"
     title="创建图片"
-    width="760px"
+    width="820px"
     destroy-on-close
+    class="picture-upload-dialog"
     @close="close"
   >
-    <el-tabs v-model="form.sourceType">
+    <div class="dialog-intro">
+      <div class="dialog-intro-title">选择上传方式并补充图片信息</div>
+      <div class="dialog-intro-text">支持本地文件上传和通过 URL 创建图片，空间、分类与标签可一次补齐。</div>
+    </div>
+
+    <el-tabs v-model="form.sourceType" class="upload-tabs">
       <el-tab-pane label="本地上传" name="local" />
       <el-tab-pane label="URL 上传" name="url" />
     </el-tabs>
 
-    <el-form label-width="96px">
+    <el-form label-width="92px" class="upload-form">
       <el-form-item v-if="form.sourceType === 'local'" label="图片文件" required>
         <el-upload
           :auto-upload="false"
@@ -141,9 +147,10 @@ async function handleSubmit() {
           :file-list="fileList"
           list-type="picture-card"
           accept="image/*"
+          class="upload-picker"
           @change="handleFileChange"
         >
-          <span>选择图片</span>
+          <div class="upload-picker-text">选择图片</div>
         </el-upload>
       </el-form-item>
 
@@ -159,10 +166,6 @@ async function handleSubmit() {
         <SpaceSelect v-model="form.spaceId" :include-public="true" placeholder="不选则上传到公共图库" />
       </el-form-item>
 
-      <el-form-item>
-        <div class="upload-space-tip">不选择空间时，前端会按“公共图库”方式提交，也就是不传 `spaceId`。</div>
-      </el-form-item>
-
       <el-form-item label="图片简介">
         <el-input
           v-model="form.introduction"
@@ -174,48 +177,135 @@ async function handleSubmit() {
         />
       </el-form-item>
 
-      <el-form-item label="分类">
-        <el-select v-model="form.category" clearable filterable style="width: 100%" placeholder="请选择分类">
-          <el-option v-for="item in categoryOptions" :key="item" :label="item" :value="item" />
-        </el-select>
-      </el-form-item>
+      <div class="upload-form-grid">
+        <el-form-item label="分类" class="upload-form-grid-item">
+          <el-select v-model="form.category" clearable filterable style="width: 100%" placeholder="请选择分类">
+            <el-option v-for="item in categoryOptions" :key="item" :label="item" :value="item" />
+          </el-select>
+        </el-form-item>
 
-      <el-form-item label="标签">
-        <el-select
-          v-model="form.tags"
-          multiple
-          filterable
-          allow-create
-          default-first-option
-          style="width: 100%"
-          placeholder="选择或输入标签"
-        >
-          <el-option v-for="item in tagOptions" :key="item" :label="item" :value="item" />
-        </el-select>
-      </el-form-item>
-
-      <el-alert
-        title="上传接口主要接收文件、名称与空间。分类、标签和简介会在上传成功后自动补发编辑请求写入。"
-        type="info"
-        :closable="false"
-        show-icon
-      />
+        <el-form-item label="标签" class="upload-form-grid-item">
+          <el-select
+            v-model="form.tags"
+            multiple
+            filterable
+            allow-create
+            default-first-option
+            style="width: 100%"
+            placeholder="选择或输入标签"
+          >
+            <el-option v-for="item in tagOptions" :key="item" :label="item" :value="item" />
+          </el-select>
+        </el-form-item>
+      </div>
     </el-form>
 
     <template #footer>
-      <el-button @click="close">取消</el-button>
-      <el-button type="primary" :loading="submitting" @click="handleSubmit">
-        {{ submitting ? '上传中...' : '开始创建' }}
-      </el-button>
+      <div class="dialog-footer">
+        <el-button @click="close">取消</el-button>
+        <el-button type="primary" :loading="submitting" @click="handleSubmit">
+          {{ submitting ? '上传中...' : '开始创建' }}
+        </el-button>
+      </div>
     </template>
   </el-dialog>
 </template>
 
 <style scoped>
-.upload-space-tip {
+.dialog-intro {
+  margin-bottom: 14px;
+}
+
+.dialog-intro-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.dialog-intro-text {
+  margin-top: 6px;
   font-size: 13px;
+  line-height: 1.7;
   color: var(--text-secondary);
-  line-height: 1.6;
+}
+
+.upload-tabs {
+  margin-bottom: 10px;
+}
+
+.upload-form {
+  padding-top: 2px;
+}
+
+.upload-form-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 14px;
+}
+
+.upload-form-grid-item {
+  margin-bottom: 0;
+}
+
+.upload-picker :deep(.el-upload--picture-card),
+.upload-picker :deep(.el-upload-list__item) {
+  width: 144px;
+  height: 144px;
+  border-radius: 18px;
+}
+
+.upload-picker-text {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+:deep(.picture-upload-dialog .el-dialog) {
+  border-radius: 26px;
+  overflow: hidden;
+}
+
+:deep(.picture-upload-dialog .el-dialog__header) {
+  padding: 24px 28px 10px;
+}
+
+:deep(.picture-upload-dialog .el-dialog__title) {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+:deep(.picture-upload-dialog .el-dialog__body) {
+  padding: 0 28px 16px;
+}
+
+:deep(.picture-upload-dialog .el-dialog__footer) {
+  padding: 8px 28px 24px;
+}
+
+:deep(.el-form-item) {
+  margin-bottom: 18px;
+}
+
+:deep(.el-form-item__label) {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+:deep(.el-input__wrapper),
+:deep(.el-textarea__inner),
+:deep(.el-select__wrapper) {
+  border-radius: 16px;
+}
+
+:deep(.el-textarea__inner) {
+  min-height: 92px;
 }
 
 :deep(.el-select__tags) {
@@ -224,5 +314,12 @@ async function handleSubmit() {
 
 :deep(.el-select__tags-text) {
   max-width: 100%;
+}
+
+@media (max-width: 900px) {
+  .upload-form-grid {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
 }
 </style>

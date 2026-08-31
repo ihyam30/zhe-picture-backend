@@ -32,8 +32,6 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 
-import static com.sdfkl.zhepicturebackend.constant.UserConstant.USER_LOGIN_STATE;
-
 /**
  * 自定义权限加载接口实现类
  */
@@ -42,6 +40,9 @@ public class StpInterfaceImpl implements StpInterface {
 
     @Value("${server.servlet.context-path}")
     private String contextPath;
+
+    @Resource
+    private CurrentUserService currentUserService;
 
     @Resource
     private UserService userService;
@@ -63,22 +64,27 @@ public class StpInterfaceImpl implements StpInterface {
      */
     @Override
     public List<String> getPermissionList(Object loginId, String loginType) {
-        // 判断 loginType，仅对类型为 "space" 进行权限校验
-        if (!StpKit.SPACE_TYPE.equals(loginType)) {
+        // Resolve space permissions for the user login domain.
+        if (!StpKit.USER_TYPE.equals(loginType)) {
             return new ArrayList<>();
         }
         // 管理员权限，表示权限校验通过
         List<String> ADMIN_PERMISSIONS = spaceUserAuthManager.getPermissionsByRole(SpaceRoleEnum.ADMIN.getValue());
         // 获取上下文对象
         SpaceUserAuthContext authContext = getAuthContextByRequest();
-        // 如果所有字段都为空，表示查询公共图库，可以通过
+        // Missing resource context must fail closed.
         if (isAllFieldsNull(authContext)) {
-            return ADMIN_PERMISSIONS;
+            // Public uploads intentionally have no space/resource id. The service
+            // layer handles the public-gallery ownership rules for this endpoint.
+            if (isPublicPictureUploadRequest()) {
+                return Collections.singletonList(SpaceUserPermissionConstant.PICTURE_UPLOAD);
+            }
+            return new ArrayList<>();
         }
         // 获取 userId
-        User loginUser = (User) StpKit.SPACE.getSessionByLoginId(loginId).get(USER_LOGIN_STATE);
+        User loginUser = currentUserService.getUserByLoginId(loginId);
         if (loginUser == null) {
-            throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "用户未登录");
+            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
         }
         Long userId = loginUser.getId();
         // 优先从上下文中获取 SpaceUser 对象
@@ -109,9 +115,9 @@ public class StpInterfaceImpl implements StpInterface {
         if (spaceId == null) {
             // 如果没有 spaceId，通过 pictureId 获取 Picture 对象和 Space 对象
             Long pictureId = authContext.getPictureId();
-            // 图片 id 也没有，则默认通过权限校验
+            // Missing resource context must fail closed.
             if (pictureId == null) {
-                return ADMIN_PERMISSIONS;
+                return new ArrayList<>();
             }
             Picture picture = pictureService.lambdaQuery()
                     .eq(Picture::getId, pictureId)
@@ -171,13 +177,19 @@ public class StpInterfaceImpl implements StpInterface {
      * @return 上下文对象
      */
     private SpaceUserAuthContext getAuthContextByRequest() {
-        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
+        ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        if (attributes == null) {
+            return null;
+        }
+        HttpServletRequest request = attributes.getRequest();
         String contentType = request.getHeader(Header.CONTENT_TYPE.getValue());
         SpaceUserAuthContext spaceUserAuthContext;
         // 获取请求参数
-        if (ContentType.JSON.getValue().equals(contentType)) {
+        if (contentType != null && contentType.toLowerCase(Locale.ROOT).startsWith(ContentType.JSON.getValue())) {
             String body = ServletUtil.getBody(request);
-            spaceUserAuthContext = JSONUtil.toBean(body, SpaceUserAuthContext.class);
+            spaceUserAuthContext = StrUtil.isBlank(body)
+                    ? new SpaceUserAuthContext()
+                    : JSONUtil.toBean(body, SpaceUserAuthContext.class);
         } else {
             Map<String, String> paramMap = ServletUtil.getParamMap(request);
             spaceUserAuthContext = BeanUtil.toBean(paramMap, SpaceUserAuthContext.class);
@@ -205,6 +217,23 @@ public class StpInterfaceImpl implements StpInterface {
             }
         }
         return spaceUserAuthContext;
+    }
+
+    private boolean isPublicPictureUploadRequest() {
+        ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        if (attributes == null) {
+            return false;
+        }
+        HttpServletRequest request = attributes.getRequest();
+        if (!"POST".equalsIgnoreCase(request.getMethod())) {
+            return false;
+        }
+        String requestPath = request.getRequestURI();
+        if (StrUtil.isNotBlank(contextPath) && requestPath.startsWith(contextPath + "/")) {
+            requestPath = requestPath.substring(contextPath.length());
+        }
+        return "/picture/upload".equals(requestPath)
+                || "/picture/upload/url".equals(requestPath);
     }
 
 

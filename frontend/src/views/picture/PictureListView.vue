@@ -309,7 +309,7 @@ onMounted(async () => {
                 </div>
               </el-form-item>
             </el-col>
-            <el-col :xl="6" :lg="7" :md="12" :sm="12" :xs="24">
+            <el-col :xl="5" :lg="6" :md="12" :sm="12" :xs="24">
               <el-form-item>
                 <div class="toolbar-actions filter-actions">
                   <el-button type="primary" :loading="loading" @click="handleSearch">基础搜索</el-button>
@@ -518,8 +518,14 @@ onMounted(async () => {
 .filter-actions {
   height: 100%;
   justify-content: flex-start;
-  align-items: end;
+  align-items: center;
   gap: 8px;
+  padding-top: 34px;
+  margin-left: -72px;
+}
+
+.filter-actions :deep(.el-button) {
+  min-height: 40px;
 }
 
 .list-panel-body {

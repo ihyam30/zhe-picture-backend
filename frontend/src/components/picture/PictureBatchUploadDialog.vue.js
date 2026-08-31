@@ -54,6 +54,12 @@ debugger; /* PartiallyEnd: #3632/scriptSetup.vue */
 const __VLS_ctx = {};
 let __VLS_components;
 let __VLS_directives;
+/** @type {__VLS_StyleScopedClasses['picture-batch-dialog']} */ ;
+/** @type {__VLS_StyleScopedClasses['picture-batch-dialog']} */ ;
+/** @type {__VLS_StyleScopedClasses['picture-batch-dialog']} */ ;
+/** @type {__VLS_StyleScopedClasses['picture-batch-dialog']} */ ;
+/** @type {__VLS_StyleScopedClasses['el-input-number']} */ ;
+/** @type {__VLS_StyleScopedClasses['el-input__wrapper']} */ ;
 // CSS variable injection 
 // CSS variable injection end 
 const __VLS_0 = {}.ElDialog;
@@ -63,15 +69,17 @@ const __VLS_1 = __VLS_asFunctionalComponent(__VLS_0, new __VLS_0({
     ...{ 'onClose': {} },
     modelValue: (__VLS_ctx.modelValue),
     title: "批量创建图片",
-    width: "620px",
+    width: "640px",
     destroyOnClose: true,
+    ...{ class: "picture-batch-dialog" },
 }));
 const __VLS_2 = __VLS_1({
     ...{ 'onClose': {} },
     modelValue: (__VLS_ctx.modelValue),
     title: "批量创建图片",
-    width: "620px",
+    width: "640px",
     destroyOnClose: true,
+    ...{ class: "picture-batch-dialog" },
 }, ...__VLS_functionalComponentArgsRest(__VLS_1));
 let __VLS_4;
 let __VLS_5;
@@ -81,14 +89,25 @@ const __VLS_7 = {
 };
 var __VLS_8 = {};
 __VLS_3.slots.default;
+__VLS_asFunctionalElement(__VLS_intrinsicElements.div, __VLS_intrinsicElements.div)({
+    ...{ class: "dialog-intro" },
+});
+__VLS_asFunctionalElement(__VLS_intrinsicElements.div, __VLS_intrinsicElements.div)({
+    ...{ class: "dialog-intro-title" },
+});
+__VLS_asFunctionalElement(__VLS_intrinsicElements.div, __VLS_intrinsicElements.div)({
+    ...{ class: "dialog-intro-text" },
+});
 const __VLS_9 = {}.ElForm;
 /** @type {[typeof __VLS_components.ElForm, typeof __VLS_components.elForm, typeof __VLS_components.ElForm, typeof __VLS_components.elForm, ]} */ ;
 // @ts-ignore
 const __VLS_10 = __VLS_asFunctionalComponent(__VLS_9, new __VLS_9({
     labelWidth: "104px",
+    ...{ class: "batch-form" },
 }));
 const __VLS_11 = __VLS_10({
     labelWidth: "104px",
+    ...{ class: "batch-form" },
 }, ...__VLS_functionalComponentArgsRest(__VLS_10));
 __VLS_12.slots.default;
 const __VLS_13 = {}.ElFormItem;
@@ -129,6 +148,9 @@ const __VLS_23 = __VLS_22({
     required: true,
 }, ...__VLS_functionalComponentArgsRest(__VLS_22));
 __VLS_24.slots.default;
+__VLS_asFunctionalElement(__VLS_intrinsicElements.div, __VLS_intrinsicElements.div)({
+    ...{ class: "count-row" },
+});
 const __VLS_25 = {}.ElInputNumber;
 /** @type {[typeof __VLS_components.ElInputNumber, typeof __VLS_components.elInputNumber, ]} */ ;
 // @ts-ignore
@@ -172,66 +194,61 @@ const __VLS_35 = __VLS_34({
     clearable: true,
 }, ...__VLS_functionalComponentArgsRest(__VLS_34));
 var __VLS_32;
-const __VLS_37 = {}.ElAlert;
-/** @type {[typeof __VLS_components.ElAlert, typeof __VLS_components.elAlert, ]} */ ;
-// @ts-ignore
-const __VLS_38 = __VLS_asFunctionalComponent(__VLS_37, new __VLS_37({
-    title: "该功能会调用后端 /picture/upload/batch 接口，从网络图片搜索结果中批量抓取并创建图片。",
-    type: "info",
-    closable: (false),
-    showIcon: true,
-}));
-const __VLS_39 = __VLS_38({
-    title: "该功能会调用后端 /picture/upload/batch 接口，从网络图片搜索结果中批量抓取并创建图片。",
-    type: "info",
-    closable: (false),
-    showIcon: true,
-}, ...__VLS_functionalComponentArgsRest(__VLS_38));
 var __VLS_12;
 {
     const { footer: __VLS_thisSlot } = __VLS_3.slots;
-    const __VLS_41 = {}.ElButton;
+    __VLS_asFunctionalElement(__VLS_intrinsicElements.div, __VLS_intrinsicElements.div)({
+        ...{ class: "dialog-footer" },
+    });
+    const __VLS_37 = {}.ElButton;
     /** @type {[typeof __VLS_components.ElButton, typeof __VLS_components.elButton, typeof __VLS_components.ElButton, typeof __VLS_components.elButton, ]} */ ;
     // @ts-ignore
-    const __VLS_42 = __VLS_asFunctionalComponent(__VLS_41, new __VLS_41({
+    const __VLS_38 = __VLS_asFunctionalComponent(__VLS_37, new __VLS_37({
         ...{ 'onClick': {} },
     }));
-    const __VLS_43 = __VLS_42({
+    const __VLS_39 = __VLS_38({
         ...{ 'onClick': {} },
-    }, ...__VLS_functionalComponentArgsRest(__VLS_42));
-    let __VLS_45;
-    let __VLS_46;
-    let __VLS_47;
-    const __VLS_48 = {
+    }, ...__VLS_functionalComponentArgsRest(__VLS_38));
+    let __VLS_41;
+    let __VLS_42;
+    let __VLS_43;
+    const __VLS_44 = {
         onClick: (__VLS_ctx.close)
     };
-    __VLS_44.slots.default;
-    var __VLS_44;
-    const __VLS_49 = {}.ElButton;
+    __VLS_40.slots.default;
+    var __VLS_40;
+    const __VLS_45 = {}.ElButton;
     /** @type {[typeof __VLS_components.ElButton, typeof __VLS_components.elButton, typeof __VLS_components.ElButton, typeof __VLS_components.elButton, ]} */ ;
     // @ts-ignore
-    const __VLS_50 = __VLS_asFunctionalComponent(__VLS_49, new __VLS_49({
+    const __VLS_46 = __VLS_asFunctionalComponent(__VLS_45, new __VLS_45({
         ...{ 'onClick': {} },
         type: "primary",
         loading: (__VLS_ctx.submitting.value),
     }));
-    const __VLS_51 = __VLS_50({
+    const __VLS_47 = __VLS_46({
         ...{ 'onClick': {} },
         type: "primary",
         loading: (__VLS_ctx.submitting.value),
-    }, ...__VLS_functionalComponentArgsRest(__VLS_50));
-    let __VLS_53;
-    let __VLS_54;
-    let __VLS_55;
-    const __VLS_56 = {
+    }, ...__VLS_functionalComponentArgsRest(__VLS_46));
+    let __VLS_49;
+    let __VLS_50;
+    let __VLS_51;
+    const __VLS_52 = {
         onClick: (__VLS_ctx.handleSubmit)
     };
-    __VLS_52.slots.default;
+    __VLS_48.slots.default;
     (__VLS_ctx.submitting.value ? '批量创建中...' : '开始批量创建');
-    var __VLS_52;
+    var __VLS_48;
 }
 var __VLS_3;
+/** @type {__VLS_StyleScopedClasses['picture-batch-dialog']} */ ;
+/** @type {__VLS_StyleScopedClasses['dialog-intro']} */ ;
+/** @type {__VLS_StyleScopedClasses['dialog-intro-title']} */ ;
+/** @type {__VLS_StyleScopedClasses['dialog-intro-text']} */ ;
+/** @type {__VLS_StyleScopedClasses['batch-form']} */ ;
+/** @type {__VLS_StyleScopedClasses['count-row']} */ ;
 /** @type {__VLS_StyleScopedClasses['helper-text']} */ ;
+/** @type {__VLS_StyleScopedClasses['dialog-footer']} */ ;
 var __VLS_dollars;
 const __VLS_self = (await import('vue')).defineComponent({
     setup() {

@@ -1,5 +1,6 @@
 ### CUSTOM ###
 application-local.yml
+.aider*
 
 HELP.md
 target/

@@ -7,7 +7,6 @@ import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.sdfkl.zhepicturebackend.constant.UserConstant;
 import com.sdfkl.zhepicturebackend.exception.BusinessException;
 import com.sdfkl.zhepicturebackend.exception.ErrorCode;
 import com.sdfkl.zhepicturebackend.exception.ThrowUtils;
@@ -22,10 +21,11 @@ import com.sdfkl.zhepicturebackend.model.vo.UserVO;
 import com.sdfkl.zhepicturebackend.service.UserService;
 import com.sdfkl.zhepicturebackend.mapper.UserMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 
-import javax.servlet.http.HttpServletRequest;
+import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -40,6 +40,9 @@ import java.util.stream.Collectors;
 @Slf4j
 public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         implements UserService {
+
+    @Resource
+    private PasswordEncoder passwordEncoder;
     /**
      * 用户注册
      *
@@ -71,69 +74,29 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     }
 
     @Override
-    public UserLoginVO userLogin(UserLoginRequest loginRequest, HttpServletRequest request) {
+    public UserLoginVO userLogin(UserLoginRequest loginRequest) {
         //1. 校验参数
         ThrowUtils.throwIf(StrUtil.hasBlank(loginRequest.getUserAccount(), loginRequest.getUserPassword()), ErrorCode.PARAMS_ERROR, "参数为空");
         ThrowUtils.throwIf(loginRequest.getUserAccount().length() < 4, ErrorCode.PARAMS_ERROR, "用户账号错误");
         ThrowUtils.throwIf(loginRequest.getUserPassword().length() < 8, ErrorCode.PARAMS_ERROR, "用户密码错误");
-        //2. 对密码加密
-        String encryptPassword = getEncryptPassword(loginRequest.getUserPassword());
-        //3. 查询用户是否存在
+        //2. Load by account and verify the password with BCrypt.
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("userAccount", loginRequest.getUserAccount());
-        queryWrapper.eq("userPassword", encryptPassword);
         User user = this.baseMapper.selectOne(queryWrapper);
-        if (user == null) {
+        boolean passwordMatched = user != null && matchesPassword(loginRequest.getUserPassword(), user.getUserPassword());
+        if (!passwordMatched) {
             log.info("user login failed, userAccount cannot match userPassword");
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户不存在或密码错误");
         }
+        // Upgrade legacy MD5 data after a successful login.
+        if (!isBcryptPassword(loginRequest.getUserPassword(), user.getUserPassword())) {
+            user.setUserPassword(passwordEncoder.encode(loginRequest.getUserPassword()));
+            this.updateById(user);
+        }
         //4. 保存用户登录态
-        request.getSession().setAttribute(UserConstant.USER_LOGIN_STATE, user);
         // 记录用户登录态到 Sa-Token
-        StpKit.SPACE.login(user.getId());
-        StpKit.SPACE.getSession().set(UserConstant.USER_LOGIN_STATE, user);
+        StpKit.USER.login(user.getId());
         return BeanUtil.copyProperties(user, UserLoginVO.class);
-    }
-
-    /**
-     * 获取当前登录用户
-     *
-     * @param request 请求
-     * @return 当前登录用户
-     */
-    @Override
-    public User getLoginUser(HttpServletRequest request) {
-        // 判断是否已经登录
-        Object userObject = request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
-        User currentUser = (User) userObject;
-        if (currentUser == null) {
-            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
-        }
-        // 从数据库中查询
-        Long userId = currentUser.getId();
-        currentUser = this.getById(userId);
-        if (currentUser == null) {
-            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
-        }
-        return currentUser;
-    }
-
-    /**
-     * 用户注销
-     *
-     * @param request 请求
-     * @return 是否注销成功
-     */
-    @Override
-    public Boolean userLogout(HttpServletRequest request) {
-        // 判断是否已经登录
-        Object userObject = request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
-        User currentUser = (User) userObject;
-        if (currentUser == null) {
-            throw new BusinessException(ErrorCode.OPERATION_ERROR, "未登录");
-        }
-        request.getSession().removeAttribute(UserConstant.USER_LOGIN_STATE);
-        return true;
     }
 
     /**
@@ -204,8 +167,34 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
      */
     @Override
     public String getEncryptPassword(String userPassword) {
-        final String SALT = "sdfkl-xiaozhe";
-        return DigestUtils.md5DigestAsHex((SALT + Arrays.toString(userPassword.getBytes())).getBytes());
+        return passwordEncoder.encode(userPassword);
+    }
+
+    private boolean matchesPassword(String rawPassword, String storedPassword) {
+        if (StrUtil.isBlank(storedPassword)) {
+            return false;
+        }
+        try {
+            if (isBcryptPassword(rawPassword, storedPassword)) {
+                return true;
+            }
+        } catch (IllegalArgumentException ignored) {
+            // Fall through to the legacy hash check for malformed old records.
+        }
+        return getLegacyEncryptPassword(rawPassword).equals(storedPassword);
+    }
+
+    private boolean isBcryptPassword(String rawPassword, String storedPassword) {
+        try {
+            return passwordEncoder.matches(rawPassword, storedPassword);
+        } catch (IllegalArgumentException ignored) {
+            return false;
+        }
+    }
+
+    private String getLegacyEncryptPassword(String userPassword) {
+        final String salt = "sdfkl-xiaozhe";
+        return DigestUtils.md5DigestAsHex((salt + Arrays.toString(userPassword.getBytes())).getBytes());
     }
 
     @Override
