@@ -13,8 +13,6 @@ import com.qcloud.cos.model.COSObject;
 import com.qcloud.cos.model.COSObjectInputStream;
 import com.qcloud.cos.utils.IOUtils;
 import com.sdfkl.zhepicturebackend.annotation.AuthCheck;
-import com.sdfkl.zhepicturebackend.api.aliyunai.AliYunAIApi;
-import com.sdfkl.zhepicturebackend.api.aliyunai.model.CreateOutPaintingTaskRequest;
 import com.sdfkl.zhepicturebackend.api.aliyunai.model.CreateOutPaintingTaskResponse;
 import com.sdfkl.zhepicturebackend.api.aliyunai.model.GetOutPaintingTaskResponse;
 import com.sdfkl.zhepicturebackend.common.BaseResponse;
@@ -89,9 +87,6 @@ public class PictureController {
             .build();
     @Resource
     private SpaceService spaceService;
-
-    @Resource
-    private AliYunAIApi aliYunAIApi;
 
     /**
      * 图片上传
@@ -429,15 +424,17 @@ public class PictureController {
      */
     @PostMapping("out_painting/create_task")
     @SaSpaceCheckPermission(value = SpaceUserPermissionConstant.PICTURE_EDIT)
-    public BaseResponse<CreateOutPaintingTaskResponse> createOutPaintingTask(@RequestBody CreatePictureOutPaintingTaskRequest createPictureOutPaintingTaskRequest
-                                                                            , HttpServletRequest request) throws JsonProcessingException {
+    public BaseResponse<CreateOutPaintingTaskResponse> createOutPaintingTask(@RequestBody CreatePictureOutPaintingTaskRequest createPictureOutPaintingTaskRequest,
+                                                                               @RequestHeader(value = "Idempotency-Key", required = true) String idempotencyKey,
+                                                                               HttpServletRequest request) throws JsonProcessingException {
         if(createPictureOutPaintingTaskRequest == null || createPictureOutPaintingTaskRequest.getPictureId() == null){
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         User loginUser = currentUserService.getRequiredUser();
         log.info("request = {}", JSONUtil.toJsonStr(createPictureOutPaintingTaskRequest));
         log.info("params = {}", JSONUtil.toJsonStr(createPictureOutPaintingTaskRequest.getParameters()));
-        CreateOutPaintingTaskResponse response = pictureService.createOutPaintingTask(createPictureOutPaintingTaskRequest, loginUser);
+        CreateOutPaintingTaskResponse response = pictureService.createOutPaintingTask(createPictureOutPaintingTaskRequest,
+                loginUser, idempotencyKey);
         return ResultUtils.success(response);
     }
 
@@ -449,7 +446,8 @@ public class PictureController {
     @GetMapping("/out_painting/get_task")
     public BaseResponse<GetOutPaintingTaskResponse> getOutPaintingTask(String taskId) {
         ThrowUtils.throwIf(StrUtil.isBlank(taskId), ErrorCode.PARAMS_ERROR);
-        GetOutPaintingTaskResponse task = aliYunAIApi.getOutPaintingTask(taskId);
+        User loginUser = currentUserService.getRequiredUser();
+        GetOutPaintingTaskResponse task = pictureService.getOutPaintingTask(taskId, loginUser);
         return ResultUtils.success(task);
     }
 }

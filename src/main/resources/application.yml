@@ -46,6 +46,10 @@ outbox:
     fixed-delay-ms: ${OUTBOX_WORKER_FIXED_DELAY_MS:5000}
     batch-size: ${OUTBOX_WORKER_BATCH_SIZE:20}
     max-retries: ${OUTBOX_WORKER_MAX_RETRIES:8}
+ai-task:
+  recovery:
+    fixed-delay-ms: ${AI_TASK_RECOVERY_FIXED_DELAY_MS:60000}
+    creating-timeout-ms: ${AI_TASK_RECOVERY_CREATING_TIMEOUT_MS:900000}
 aliyun:
   apiKey: ${ALIYUN_API_KEY:}
 spring:
@@ -59,8 +63,8 @@ spring:
       zhe_picture:
         type: com.zaxxer.hikari.HikariDataSource
         driver-class-name: com.mysql.cj.jdbc.Driver
-        url: jdbc:mysql://localhost:3306/zhe_picture
-        username: root
+        url: ${DB_URL:jdbc:mysql://localhost:3306/zhe_picture}
+        username: ${DB_USERNAME:root}
         password: ${DB_PASSWORD:}
     rules:
       sharding:
@@ -84,9 +88,19 @@ spring:
   # 数据库配置
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/zhe_picture
-    username: root
+    url: ${DB_URL:jdbc:mysql://localhost:3306/zhe_picture}
+    username: ${DB_USERNAME:root}
     password: ${DB_PASSWORD:}
+  flyway:
+    enabled: ${FLYWAY_ENABLED:true}
+    locations: classpath:db/migration
+    url: ${DB_URL:jdbc:mysql://localhost:3306/zhe_picture}
+    user: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:}
+    # 已有数据库首次接入 Flyway 时，先确认表结构后再临时打开并设置版本。
+    baseline-on-migrate: ${FLYWAY_BASELINE_ON_MIGRATE:false}
+    baseline-version: ${FLYWAY_BASELINE_VERSION:4}
+    validate-on-migrate: true
   # Redis 配置
   redis:
     database: 5

@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.sdfkl.zhepicturebackend.api.aliyunai.model.CreateOutPaintingTaskResponse;
+import com.sdfkl.zhepicturebackend.api.aliyunai.model.GetOutPaintingTaskResponse;
 import com.sdfkl.zhepicturebackend.common.DeleteRequest;
 import com.sdfkl.zhepicturebackend.model.dto.picture.*;
 import com.sdfkl.zhepicturebackend.model.entity.Picture;
@@ -144,5 +145,12 @@ public interface PictureService extends IService<Picture> {
      * @param loginUser                           登录用户
      * @return 图片外绘任务响应
      */
-    CreateOutPaintingTaskResponse createOutPaintingTask(CreatePictureOutPaintingTaskRequest createPictureOutPaintingTaskRequest, User loginUser) throws JsonProcessingException;
+    CreateOutPaintingTaskResponse createOutPaintingTask(CreatePictureOutPaintingTaskRequest createPictureOutPaintingTaskRequest,
+                                                        User loginUser,
+                                                        String idempotencyKey) throws JsonProcessingException;
+
+    /**
+     * 查询当前用户有权访问的 AI 扩图任务，并同步第三方任务状态。
+     */
+    GetOutPaintingTaskResponse getOutPaintingTask(String providerTaskId, User loginUser);
 }
