@@ -61,8 +61,7 @@ public class SpaceController {
         ThrowUtils.throwIf(oldSpace == null, ErrorCode.NOT_FOUND_ERROR, "空间不存在");
         // 仅本人或者管理员可删除
         spaceService.checkSpaceAuth(loginUser, oldSpace);
-        boolean result = spaceService.removeById(id);
-        ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
+        spaceService.deleteSpace(id, loginUser);
         return ResultUtils.success(true);
     }
 

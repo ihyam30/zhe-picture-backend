@@ -1,6 +1,5 @@
 package com.sdfkl.zhepicturebackend.model.dto.file;
 
-import com.baomidou.mybatisplus.annotation.TableLogic;
 import lombok.Data;
 
 import java.util.Date;
@@ -19,6 +18,16 @@ public class UploadPictureResult {
      * 缩略图 url
      */
     private String thumbnailUrl;
+
+    private String objectKey;
+
+    private String thumbnailObjectKey;
+
+    private String compressedObjectKey;
+
+    private String contentType;
+
+    private String etag;
 
 
     /**

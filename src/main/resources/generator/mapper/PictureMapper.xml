@@ -8,6 +8,14 @@
         <id property="id" column="id"/>
         <result property="url" column="url"/>
         <result property="thumbnailUrl" column="thumbnailUrl"/>
+        <result property="objectKey" column="objectKey"/>
+        <result property="thumbnailObjectKey" column="thumbnailObjectKey"/>
+        <result property="compressedObjectKey" column="compressedObjectKey"/>
+        <result property="uploadStatus" column="uploadStatus"/>
+        <result property="contentType" column="contentType"/>
+        <result property="etag" column="etag"/>
+        <result property="version" column="version"/>
+        <result property="idempotencyKey" column="idempotencyKey"/>
         <result property="name" column="name"/>
         <result property="introduction" column="introduction"/>
         <result property="category" column="category"/>
@@ -35,6 +43,7 @@
         ,url,name,introduction,category,tags,
         picSize,picWidth,picHeight,picScale,picFormat,
         userId,createTime,editTime,updateTime,isDelete,
-        reviewStatus,reviewMessage,reviewerId,reviewTime,thumbnailUrl,picColor,spaceId
+        reviewStatus,reviewMessage,reviewerId,reviewTime,thumbnailUrl,picColor,spaceId,
+        objectKey,thumbnailObjectKey,compressedObjectKey,uploadStatus,contentType,etag,version,idempotencyKey
     </sql>
 </mapper>

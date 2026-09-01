@@ -58,6 +58,16 @@ public class Space implements Serializable {
     private Long totalCount;
 
     /**
+     * 正在上传任务预留的空间大小。
+     */
+    private Long reservedSize;
+
+    /**
+     * 正在上传任务预留的图片数量。
+     */
+    private Long reservedCount;
+
+    /**
      * 创建用户 id
      */
     private Long userId;

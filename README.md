@@ -134,6 +134,10 @@ zhe-picture-backend/
 | id | bigint | 主键 |
 | url | varchar(512) | 原图 URL |
 | thumbnailUrl | varchar(512) | 缩略图 URL |
+| objectKey / thumbnailObjectKey / compressedObjectKey | varchar(512) | COS 原图、缩略图、压缩图对象 key |
+| uploadStatus | varchar(32) | `UPLOADING` / `READY` / `FAILED` / `DELETE_PENDING` |
+| contentType / etag / version | - | 实际内容类型、COS 校验标识、乐观锁版本 |
+| idempotencyKey | varchar(128) | 上传请求幂等号 |
 | name | varchar(128) | 图片名称 |
 | introduction | varchar(512) | 简介 |
 | category | varchar(64) | 分类 |
@@ -212,6 +216,12 @@ http://localhost:8123/api/doc.html
 - `POST /api/space/analyze/usage`：空间使用情况分析
 - `POST /api/spaceUser/add`：添加空间成员
 
+图片上传建议在请求头中携带唯一的 `Idempotency-Key`。同一个幂等号只代表一次上传操作；成功后重复请求会返回原结果，失败或处理中请更换幂等号。上传完成后的缩略图和压缩图由 Outbox Worker 异步生成。
+
+孤儿对象扫描默认关闭，确认历史对象 key 已迁移且 COS 前缀配置正确后，再设置
+`PICTURE_ORPHAN_SCAN_ENABLED=true` 开启。对象删除、失败补偿和衍生图生成由 Outbox Worker
+自动重试，`OUTBOX_WORKER_MAX_RETRIES` 可调整最大重试次数。
+
 ---
 
 ## 七、快速启动
@@ -238,6 +248,10 @@ cd zhe-picture-backend
 ```bash
 mysql -u root -p < sql/create_table.sql
 ```
+
+已有数据库升级到第二阶段时，先备份数据库，再执行一次
+`sql/migration_phase2_upload.sql`。该脚本会迁移历史 URL 中的对象 key，并创建上传任务和
+Outbox 表；应用启动前必须完成这一步。
 
 #### 3. 配置本地环境
 

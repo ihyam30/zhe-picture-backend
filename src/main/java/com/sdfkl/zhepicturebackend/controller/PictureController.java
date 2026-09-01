@@ -108,7 +108,8 @@ public class PictureController {
                                                  PictureUploadRequest pictureUploadRequest,
                                                  HttpServletRequest request) {
         User loginUser = currentUserService.getRequiredUser();
-        PictureVO pictureVO = pictureService.uploadPicture(multipartFile, pictureUploadRequest, loginUser);
+        PictureVO pictureVO = pictureService.uploadPicture(multipartFile, pictureUploadRequest, loginUser,
+                request.getHeader("Idempotency-Key"));
         return ResultUtils.success(pictureVO);
     }
 
@@ -125,7 +126,8 @@ public class PictureController {
     public BaseResponse<PictureVO> uploadPictureByUrl(@RequestBody PictureUploadRequest pictureUploadRequest,
                                                       HttpServletRequest request) {
         User loginUser = currentUserService.getRequiredUser();
-        PictureVO pictureVO = pictureService.uploadPicture(pictureUploadRequest.getFileUrl(), pictureUploadRequest, loginUser);
+        PictureVO pictureVO = pictureService.uploadPicture(pictureUploadRequest.getFileUrl(), pictureUploadRequest,
+                loginUser, request.getHeader("Idempotency-Key"));
         return ResultUtils.success(pictureVO);
     }
 
