@@ -1,8 +1,8 @@
 -- 创建库
-create database if not exists yu_picture;
+create database if not exists zhe_picture;
 
 -- 切换库
-use yu_picture;
+use zhe_picture;
 
 -- 用户表
 create table if not exists user
@@ -27,6 +27,14 @@ create table if not exists picture
 (
     id           bigint auto_increment comment 'id' primary key,
     url          varchar(512)                       not null comment '图片 url',
+    objectKey    varchar(512)                       null comment '原图 COS 对象 key',
+    thumbnailObjectKey varchar(512)                 null comment '缩略图 COS 对象 key',
+    compressedObjectKey varchar(512)                null comment '压缩图 COS 对象 key',
+    uploadStatus varchar(32) default 'READY'        not null comment '上传状态',
+    contentType  varchar(128)                       null comment '实际内容类型',
+    etag         varchar(128)                       null comment 'COS ETag',
+    version      int default 0                      not null comment '乐观锁版本',
+    idempotencyKey varchar(128)                     null comment '上传幂等号',
     name         varchar(128)                       not null comment '图片名称',
     introduction varchar(512)                       null comment '简介',
     category     varchar(64)                        null comment '分类',
@@ -72,6 +80,8 @@ create table if not exists space
     maxCount   bigint   default 0                 null comment '空间图片的最大数量',
     totalSize  bigint   default 0                 null comment '当前空间下图片的总大小',
     totalCount bigint   default 0                 null comment '当前空间下的图片数量',
+    reservedSize bigint default 0                not null comment '上传中的容量预留',
+    reservedCount bigint default 0               not null comment '上传中的数量预留',
     userId     bigint                             not null comment '创建用户 id',
     createTime datetime default CURRENT_TIMESTAMP not null comment '创建时间',
     editTime   datetime default CURRENT_TIMESTAMP not null comment '编辑时间',
@@ -114,3 +124,48 @@ create table if not exists space_user
     INDEX idx_spaceId (spaceId),                    -- 提升按空间查询的性能
     INDEX idx_userId (userId)                       -- 提升按用户查询的性能
 ) comment '空间用户关联' collate = utf8mb4_unicode_ci;
+
+-- 上传任务和事务 Outbox
+create table if not exists picture_upload_task
+(
+    id BIGINT NOT NULL PRIMARY KEY,
+    pictureId BIGINT NULL,
+    oldPictureId BIGINT NULL,
+    userId BIGINT NOT NULL,
+    spaceId BIGINT NULL,
+    idempotencyKey VARCHAR(128) NOT NULL,
+    objectKey VARCHAR(512) NOT NULL,
+    thumbnailObjectKey VARCHAR(512) NULL,
+    compressedObjectKey VARCHAR(512) NULL,
+    picSize BIGINT NOT NULL,
+    oldObjectKey VARCHAR(512) NULL,
+    oldThumbnailObjectKey VARCHAR(512) NULL,
+    oldCompressedObjectKey VARCHAR(512) NULL,
+    oldPicSize BIGINT NULL,
+    status VARCHAR(32) NOT NULL,
+    retryCount INT NOT NULL DEFAULT 0,
+    lastError VARCHAR(512) NULL,
+    createTime DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updateTime DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uk_upload_task_user_idempotency (userId, idempotencyKey),
+    INDEX idx_upload_task_status_time (status, createTime),
+    INDEX idx_upload_task_picture (pictureId)
+) comment '图片上传任务' collate = utf8mb4_unicode_ci;
+
+create table if not exists outbox_event
+(
+    id BIGINT NOT NULL PRIMARY KEY,
+    eventType VARCHAR(64) NOT NULL,
+    aggregateId BIGINT NULL,
+    dedupeKey VARCHAR(192) NOT NULL,
+    payload TEXT NOT NULL,
+    status VARCHAR(32) NOT NULL,
+    retryCount INT NOT NULL DEFAULT 0,
+    nextRetryTime DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    lockedUntil DATETIME NULL,
+    lastError VARCHAR(512) NULL,
+    createTime DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updateTime DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uk_outbox_dedupeKey (dedupeKey),
+    INDEX idx_outbox_poll (status, nextRetryTime, lockedUntil)
+) comment '事务 Outbox 事件' collate = utf8mb4_unicode_ci;

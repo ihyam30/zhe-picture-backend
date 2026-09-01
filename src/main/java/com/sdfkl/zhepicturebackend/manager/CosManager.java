@@ -6,6 +6,10 @@ import com.qcloud.cos.model.COSObject;
 import com.qcloud.cos.model.GetObjectRequest;
 import com.qcloud.cos.model.PutObjectRequest;
 import com.qcloud.cos.model.PutObjectResult;
+import com.qcloud.cos.model.ObjectMetadata;
+import com.qcloud.cos.model.COSObjectSummary;
+import com.qcloud.cos.model.ListObjectsRequest;
+import com.qcloud.cos.model.ObjectListing;
 import com.qcloud.cos.model.ciModel.persistence.PicOperations;
 import com.sdfkl.zhepicturebackend.config.CosClientConfig;
 import org.springframework.stereotype.Component;
@@ -32,6 +36,18 @@ public class CosManager {
      */
     public PutObjectResult putObject(String key, File file) {
         PutObjectRequest putObjectRequest = new PutObjectRequest(cosClientConfig.getBucket(), key, file);
+        return cosClient.putObject(putObjectRequest);
+    }
+
+    /**
+     * 上传文件并显式设置内容类型。
+     */
+    public PutObjectResult putObject(String key, File file, String contentType) {
+        PutObjectRequest putObjectRequest = new PutObjectRequest(cosClientConfig.getBucket(), key, file);
+        ObjectMetadata metadata = new ObjectMetadata();
+        metadata.setContentType(contentType);
+        metadata.setContentLength(file.length());
+        putObjectRequest.setMetadata(metadata);
         return cosClient.putObject(putObjectRequest);
     }
 
@@ -89,7 +105,32 @@ public class CosManager {
      * @param key        唯一键
      */
     public void deleteObject(String key){
-        cosClient.deleteObject(cosClientConfig.getBucket(), key);
+        if (key == null || key.trim().isEmpty()) {
+            return;
+        }
+        // 新链路只接受对象 key，兼容历史数据时仅去掉开头的斜杠，不解析 URL。
+        String normalizedKey = key.trim().replaceFirst("^/+", "");
+        cosClient.deleteObject(cosClientConfig.getBucket(), normalizedKey);
+    }
+
+    /**
+     * 分页读取指定前缀下的对象，用于孤儿对象对账。
+     */
+    public List<COSObjectSummary> listObjectSummaries(String prefix) {
+        List<COSObjectSummary> result = new ArrayList<>();
+        ListObjectsRequest request = new ListObjectsRequest();
+        request.setBucketName(cosClientConfig.getBucket());
+        request.setPrefix(prefix);
+        request.setMaxKeys(1000);
+        ObjectListing listing;
+        do {
+            listing = cosClient.listObjects(request);
+            result.addAll(listing.getObjectSummaries());
+            if (listing.isTruncated()) {
+                request.setMarker(listing.getNextMarker());
+            }
+        } while (listing.isTruncated());
+        return result;
     }
 
 }

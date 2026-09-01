@@ -1,6 +1,7 @@
 package com.sdfkl.zhepicturebackend.manager.upload;
 
 import cn.hutool.core.io.FileUtil;
+import cn.hutool.core.util.StrUtil;
 import com.sdfkl.zhepicturebackend.exception.BusinessException;
 import com.sdfkl.zhepicturebackend.exception.ErrorCode;
 import com.sdfkl.zhepicturebackend.exception.ThrowUtils;
@@ -39,7 +40,12 @@ public class FilePictureUpload extends PictureUploadTemplate {
         final long ONE_MB = 1024 * 1024;
         ThrowUtils.throwIf(fileSize > 2 * ONE_MB, ErrorCode.PARAMS_ERROR, "文件大小不能超过2MB");
         // 校验图片的后缀
-        String fileSuffix = FileUtil.getSuffix(multipartFile.getOriginalFilename());
+        String originalFilename = multipartFile.getOriginalFilename();
+        ThrowUtils.throwIf(StrUtil.isBlank(originalFilename), ErrorCode.PARAMS_ERROR, "文件名不能为空");
+        String fileSuffix = FileUtil.getSuffix(originalFilename);
+        if (fileSuffix != null) {
+            fileSuffix = fileSuffix.toLowerCase();
+        }
         final List<String> ALLOW_FORMAT_LIST = Arrays.asList("jpg", "jpeg", "png", "webp");
         ThrowUtils.throwIf(!ALLOW_FORMAT_LIST.contains(fileSuffix), ErrorCode.PARAMS_ERROR, "文件格式错误");
     }

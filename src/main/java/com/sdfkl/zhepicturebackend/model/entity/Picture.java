@@ -33,6 +33,47 @@ public class Picture implements Serializable {
     private String thumbnailUrl;
 
     /**
+     * 原图 COS 对象 key，删除对象时只使用该字段，不再从 URL 反解析。
+     */
+    private String objectKey;
+
+    /**
+     * 缩略图 COS 对象 key。
+     */
+    private String thumbnailObjectKey;
+
+    /**
+     * 压缩图 COS 对象 key。
+     */
+    private String compressedObjectKey;
+
+    /**
+     * 上传生命周期状态。
+     */
+    private String uploadStatus;
+
+    /**
+     * 实际内容类型。
+     */
+    private String contentType;
+
+    /**
+     * COS ETag。
+     */
+    private String etag;
+
+    /**
+     * 乐观锁版本号。
+     */
+    @Version
+    private Integer version;
+
+    /**
+     * 客户端幂等号。
+     */
+    private String idempotencyKey;
+
+    /**
      * 图片名称
      */
     private String name;

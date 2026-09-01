@@ -4,6 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -17,6 +18,10 @@ import com.sdfkl.zhepicturebackend.model.dto.space.SpaceQueryRequest;
 import com.sdfkl.zhepicturebackend.model.entity.Space;
 import com.sdfkl.zhepicturebackend.model.entity.SpaceUser;
 import com.sdfkl.zhepicturebackend.model.entity.User;
+import com.sdfkl.zhepicturebackend.model.entity.Picture;
+import com.sdfkl.zhepicturebackend.model.entity.PictureUploadTask;
+import com.sdfkl.zhepicturebackend.model.enums.OutboxEventTypeEnum;
+import com.sdfkl.zhepicturebackend.model.enums.PictureUploadTaskStatusEnum;
 import com.sdfkl.zhepicturebackend.model.enums.SpaceLevelEnum;
 import com.sdfkl.zhepicturebackend.model.enums.SpaceRoleEnum;
 import com.sdfkl.zhepicturebackend.model.enums.SpaceTypeEnum;
@@ -25,6 +30,9 @@ import com.sdfkl.zhepicturebackend.model.vo.UserVO;
 import com.sdfkl.zhepicturebackend.service.SpaceService;
 import com.sdfkl.zhepicturebackend.service.SpaceUserService;
 import com.sdfkl.zhepicturebackend.service.UserService;
+import com.sdfkl.zhepicturebackend.service.PictureService;
+import com.sdfkl.zhepicturebackend.service.OutboxEventService;
+import com.sdfkl.zhepicturebackend.service.PictureUploadTaskService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -54,6 +62,16 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper, Space>
 
     @Resource
     private SpaceUserService spaceUserService;
+
+    @Resource
+    @Lazy
+    private PictureService pictureService;
+
+    @Resource
+    private OutboxEventService outboxEventService;
+
+    @Resource
+    private PictureUploadTaskService pictureUploadTaskService;
 
 //    @Resource
 //    @Lazy
@@ -276,6 +294,64 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper, Space>
         if (!space.getUserId().equals(loginUser.getId()) && !userService.isAdmin(loginUser)) {
             throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
         }
+    }
+
+    /**
+     * 级联删除空间的数据库关系，并把 COS 清理交给 Outbox Worker。
+     */
+    @Override
+    public void deleteSpace(Long spaceId, User loginUser) {
+        transactionTemplate.execute(status -> {
+            Space space = lambdaQuery().eq(Space::getId, spaceId).last("FOR UPDATE").one();
+            ThrowUtils.throwIf(space == null, ErrorCode.NOT_FOUND_ERROR, "空间不存在");
+            checkSpaceAuth(loginUser, space);
+
+            List<Picture> pictures = pictureService.lambdaQuery()
+                    .eq(Picture::getSpaceId, spaceId)
+                    .last("FOR UPDATE")
+                    .list();
+            for (Picture picture : pictures) {
+                publishObjectCleanup(picture.getId(), picture.getObjectKey(),
+                        picture.getThumbnailObjectKey(), picture.getCompressedObjectKey());
+            }
+
+            List<PictureUploadTask> uploadingTasks = pictureUploadTaskService.lambdaQuery()
+                    .eq(PictureUploadTask::getSpaceId, spaceId)
+                    .eq(PictureUploadTask::getStatus, PictureUploadTaskStatusEnum.UPLOADING.name())
+                    .last("FOR UPDATE")
+                    .list();
+            for (PictureUploadTask task : uploadingTasks) {
+                publishObjectCleanup(task.getPictureId(), task.getObjectKey(),
+                        task.getThumbnailObjectKey(), task.getCompressedObjectKey());
+                task.setStatus(PictureUploadTaskStatusEnum.FAILED.name());
+                task.setLastError("空间已删除");
+                pictureUploadTaskService.updateById(task);
+            }
+
+            if (!pictures.isEmpty()) {
+                // 必须带 spaceId，确保 ShardingSphere 路由到对应空间分表。
+                ThrowUtils.throwIf(!pictureService.remove(new QueryWrapper<Picture>().eq("spaceId", spaceId)),
+                        ErrorCode.OPERATION_ERROR, "级联删除图片失败");
+            }
+            spaceUserService.remove(new QueryWrapper<SpaceUser>().eq("spaceId", spaceId));
+            space.setTotalSize(0L);
+            space.setTotalCount(0L);
+            space.setReservedSize(0L);
+            space.setReservedCount(0L);
+            ThrowUtils.throwIf(!updateById(space), ErrorCode.OPERATION_ERROR, "更新空间状态失败");
+            ThrowUtils.throwIf(!removeById(spaceId), ErrorCode.OPERATION_ERROR, "删除空间失败");
+            return true;
+        });
+    }
+
+    private void publishObjectCleanup(Long pictureId, String... keys) {
+        List<String> objectKeys = Arrays.stream(keys)
+                .filter(StrUtil::isNotBlank)
+                .distinct()
+                .collect(Collectors.toList());
+        if (objectKeys.isEmpty()) return;
+        outboxEventService.publish(OutboxEventTypeEnum.DELETE_OBJECT.name(), pictureId,
+                "delete-space-object:" + pictureId + ":" + objectKeys.hashCode(), JSONUtil.toJsonStr(objectKeys));
     }
 }
 

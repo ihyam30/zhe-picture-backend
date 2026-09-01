@@ -31,6 +31,9 @@ public interface PictureService extends IService<Picture> {
      */
     PictureVO uploadPicture(Object inputResource, PictureUploadRequest pictureUploadRequest, User loginUser);
 
+    PictureVO uploadPicture(Object inputResource, PictureUploadRequest pictureUploadRequest,
+                            User loginUser, String idempotencyKey);
+
     /**
      * 获取查询条件
      *

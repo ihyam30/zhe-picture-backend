@@ -78,6 +78,17 @@
             <artifactId>jsoup</artifactId>
             <version>1.22.1</version>
         </dependency>
+        <!-- ImageIO WebP reader，配合上传前真实解码和像素限制 -->
+        <dependency>
+            <groupId>com.twelvemonkeys.imageio</groupId>
+            <artifactId>imageio-webp</artifactId>
+            <version>3.12.0</version>
+        </dependency>
+        <!-- 固定已校验的 DNS 解析结果，避免 URL 上传中的 DNS 重绑定 SSRF -->
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+        </dependency>
         <!--redis-->
         <dependency>
             <groupId>org.springframework.boot</groupId>

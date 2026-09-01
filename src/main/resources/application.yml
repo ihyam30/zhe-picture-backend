@@ -26,6 +26,26 @@ cos:
   client:
     secretId: ${COS_SECRET_ID:}
     secretKey: ${COS_SECRET_KEY:}
+picture:
+  upload:
+    max-pixels: ${PICTURE_UPLOAD_MAX_PIXELS:16000000}
+    reconcile-timeout-ms: ${PICTURE_UPLOAD_RECONCILE_TIMEOUT_MS:900000}
+    cos:
+      max-retries: ${PICTURE_COS_UPLOAD_MAX_RETRIES:3}
+    url:
+      connect-timeout-ms: ${PICTURE_URL_CONNECT_TIMEOUT_MS:5000}
+      read-timeout-ms: ${PICTURE_URL_READ_TIMEOUT_MS:10000}
+      max-bytes: ${PICTURE_URL_MAX_BYTES:2097152}
+      max-concurrency: ${PICTURE_URL_MAX_CONCURRENCY:8}
+  reconcile:
+    orphan-scan-enabled: ${PICTURE_ORPHAN_SCAN_ENABLED:false}
+    orphan-grace-ms: ${PICTURE_ORPHAN_GRACE_MS:86400000}
+    orphan-scan-delay-ms: ${PICTURE_ORPHAN_SCAN_DELAY_MS:3600000}
+outbox:
+  worker:
+    fixed-delay-ms: ${OUTBOX_WORKER_FIXED_DELAY_MS:5000}
+    batch-size: ${OUTBOX_WORKER_BATCH_SIZE:20}
+    max-retries: ${OUTBOX_WORKER_MAX_RETRIES:8}
 aliyun:
   apiKey: ${ALIYUN_API_KEY:}
 spring:
