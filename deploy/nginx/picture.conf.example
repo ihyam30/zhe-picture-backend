@@ -1,0 +1,28 @@
+# Same-origin reverse proxy example.
+# Replace the domain and serve the frontend build from the configured root.
+# Production deployments should terminate TLS on this server and use https://
+# as the public origin in APP_CORS_ALLOWED_ORIGINS.
+server {
+    listen 80;
+    server_name picture.example.com;
+
+    root /usr/share/nginx/html;
+    index index.html;
+
+    location /api/ {
+        # Keep /api because Spring Boot uses server.servlet.context-path=/api.
+        proxy_pass http://127.0.0.1:8123;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_read_timeout 60m;
+    }
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}
