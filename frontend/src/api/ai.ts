@@ -5,10 +5,13 @@ import type {
   GetOutPaintingTaskResponse,
 } from '@/types/picture';
 
-export function createOutPaintingTask(data: CreatePictureOutPaintingTaskRequest) {
+export function createOutPaintingTask(data: CreatePictureOutPaintingTaskRequest, idempotencyKey: string) {
   return request.post<never, CreateOutPaintingTaskResponse>(
     '/picture/out_painting/create_task',
     data,
+    {
+      headers: { 'Idempotency-Key': idempotencyKey },
+    },
   );
 }
 

@@ -15,12 +15,15 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.sdfkl.zhepicturebackend.api.aliyunai.AliYunAIApi;
 import com.sdfkl.zhepicturebackend.api.aliyunai.model.CreateOutPaintingTaskRequest;
 import com.sdfkl.zhepicturebackend.api.aliyunai.model.CreateOutPaintingTaskResponse;
+import com.sdfkl.zhepicturebackend.api.aliyunai.model.GetOutPaintingTaskResponse;
 import com.sdfkl.zhepicturebackend.common.DeleteRequest;
 import com.sdfkl.zhepicturebackend.exception.BusinessException;
 import com.sdfkl.zhepicturebackend.exception.ErrorCode;
 import com.sdfkl.zhepicturebackend.exception.ThrowUtils;
 import com.sdfkl.zhepicturebackend.manager.CosManager;
 import com.sdfkl.zhepicturebackend.manager.FileManager;
+import com.sdfkl.zhepicturebackend.manager.auth.SpaceUserAuthManager;
+import com.sdfkl.zhepicturebackend.manager.auth.model.SpaceUserPermissionConstant;
 import com.sdfkl.zhepicturebackend.manager.upload.FilePictureUpload;
 import com.sdfkl.zhepicturebackend.manager.upload.PictureUploadTemplate;
 import com.sdfkl.zhepicturebackend.manager.upload.UrlPictureUpload;
@@ -31,6 +34,7 @@ import com.sdfkl.zhepicturebackend.model.entity.Space;
 import com.sdfkl.zhepicturebackend.model.entity.User;
 import com.sdfkl.zhepicturebackend.model.entity.OutboxEvent;
 import com.sdfkl.zhepicturebackend.model.entity.PictureUploadTask;
+import com.sdfkl.zhepicturebackend.model.entity.AiTask;
 import com.sdfkl.zhepicturebackend.model.enums.OutboxEventTypeEnum;
 import com.sdfkl.zhepicturebackend.model.enums.PictureReviewStatusEnum;
 import com.sdfkl.zhepicturebackend.model.enums.PictureUploadStatusEnum;
@@ -43,6 +47,7 @@ import com.sdfkl.zhepicturebackend.mapper.PictureMapper;
 import com.sdfkl.zhepicturebackend.service.SpaceService;
 import com.sdfkl.zhepicturebackend.service.OutboxEventService;
 import com.sdfkl.zhepicturebackend.service.PictureUploadTaskService;
+import com.sdfkl.zhepicturebackend.service.AiTaskService;
 import com.sdfkl.zhepicturebackend.service.UserService;
 import com.sdfkl.zhepicturebackend.utils.ColorSimilarUtils;
 import com.sdfkl.zhepicturebackend.utils.ColorTransformUtils;
@@ -55,11 +60,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.util.DigestUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.awt.*;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -78,6 +85,8 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
     @Resource
     private UserService userService;
     @Resource
+    private SpaceUserAuthManager spaceUserAuthManager;
+    @Resource
     private FilePictureUpload filePictureUpload;
     @Resource
     private UrlPictureUpload urlPictureUpload;
@@ -93,6 +102,15 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
     private PictureUploadTaskService pictureUploadTaskService;
     @Resource
     private AliYunAIApi aliYunAIApi;
+    @Resource
+    private AiTaskService aiTaskService;
+
+    private static final String AI_PROVIDER = "aliyun";
+    private static final String AI_MODEL = "image-out-painting";
+    private static final String AI_TASK_STATUS_CREATING = "CREATING";
+    private static final String AI_TASK_STATUS_FAILED = "FAILED";
+    private static final String AI_TASK_STATUS_UNKNOWN = "UNKNOWN";
+    private static final String AI_TASK_STATUS_RETRYABLE = "RETRYABLE";
 
     /**
      * 上传图片
@@ -787,6 +805,31 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
     }
 
     /**
+     * 校验 AI 扩图的源图片权限。
+     *
+     * <p>团队空间允许拥有 picture:edit 权限的成员发起扩图，不能复用
+     * {@link #checkPictureAuth(Picture, User)} 的“仅图片所有者”规则。</p>
+     */
+    private void checkOutPaintingPictureAuth(Picture picture, User loginUser) {
+        if (userService.isAdmin(loginUser)) {
+            return;
+        }
+        if (picture.getSpaceId() == null) {
+            ThrowUtils.throwIf(!Objects.equals(picture.getUserId(), loginUser.getId()),
+                    ErrorCode.NO_AUTH_ERROR);
+            return;
+        }
+
+        Space space = spaceService.getById(picture.getSpaceId());
+        ThrowUtils.throwIf(space == null, ErrorCode.NOT_FOUND_ERROR, "空间不存在");
+        boolean isSpaceOwner = Objects.equals(space.getUserId(), loginUser.getId());
+        boolean hasEditPermission = spaceUserAuthManager
+                .getPermissionList(space, loginUser)
+                .contains(SpaceUserPermissionConstant.PICTURE_EDIT);
+        ThrowUtils.throwIf(!isSpaceOwner && !hasEditPermission, ErrorCode.NO_AUTH_ERROR);
+    }
+
+    /**
      * 删除图片
      * @param deleteRequest 删除请求
      * @param loginUser 登录用户
@@ -985,15 +1028,24 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
     @Override
     public CreateOutPaintingTaskResponse createOutPaintingTask(
             CreatePictureOutPaintingTaskRequest createPictureOutPaintingTaskRequest,
-            User loginUser
+            User loginUser,
+            String idempotencyKey
     ) throws JsonProcessingException {
+        ThrowUtils.throwIf(loginUser == null, ErrorCode.NO_AUTH_ERROR);
+        ThrowUtils.throwIf(createPictureOutPaintingTaskRequest == null
+                        || createPictureOutPaintingTaskRequest.getPictureId() == null,
+                ErrorCode.PARAMS_ERROR);
+
+        ThrowUtils.throwIf(StrUtil.isBlank(idempotencyKey), ErrorCode.PARAMS_ERROR,
+                "AI 任务必须携带 Idempotency-Key");
+        String requestKey = idempotencyKey.trim();
+        ThrowUtils.throwIf(requestKey.length() > 128, ErrorCode.PARAMS_ERROR,
+                "AI 任务幂等号长度不能超过128个字符");
+
         // 获取图片信息
         Long pictureId = createPictureOutPaintingTaskRequest.getPictureId();
         Picture picture = Optional.ofNullable(this.getById(pictureId))
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND_ERROR, "图片不存在"));
-
-        // 校验权限
-        // checkPictureAuth(picture, loginUser);
 
         // 参数校验
         PictureOutPaintingParams dtoParams = createPictureOutPaintingTaskRequest.getParameters();
@@ -1001,7 +1053,8 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "扩图参数不能为空");
         }
 
-        if(picture.getPicWidth() < 512 || picture.getPicHeight() < 512){
+        if (picture.getPicWidth() == null || picture.getPicHeight() == null
+                || picture.getPicWidth() < 512 || picture.getPicHeight() < 512) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "图片宽高不能小于512");
         }
 
@@ -1042,6 +1095,33 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
             );
         }
 
+        // 校验权限。团队空间中拥有 picture:edit 权限的成员也可以发起扩图。
+        checkOutPaintingPictureAuth(picture, loginUser);
+        String requestHash = buildOutPaintingRequestHash(picture, dtoParams,
+                leftOffset, rightOffset, topOffset, bottomOffset);
+
+        // 幂等号必须绑定到具体请求，避免同一用户复用幂等号时错误返回另一张图片的任务。
+        AiTask historicalTask = aiTaskService.getByUserAndIdempotencyKey(loginUser.getId(), requestKey);
+        AiTask aiTask = null;
+        if (historicalTask != null) {
+            ensureAiTaskRequestMatches(historicalTask, requestHash);
+            if (!AI_TASK_STATUS_RETRYABLE.equals(historicalTask.getStatus())) {
+                return restoreCreateResponse(historicalTask, requestHash);
+            }
+            // 只有管理员确认第三方没有创建任务后，RETRYABLE 才能重新进入提交状态。
+            boolean claimed = aiTaskService.claimRetryableTask(
+                    historicalTask.getId(), loginUser.getId(), requestKey);
+            if (!claimed) {
+                AiTask latestTask = aiTaskService.getByUserAndIdempotencyKey(loginUser.getId(), requestKey);
+                ThrowUtils.throwIf(latestTask == null, ErrorCode.OPERATION_ERROR, "AI 任务状态已变化");
+                return restoreCreateResponse(latestTask, requestHash);
+            }
+            aiTask = historicalTask;
+            aiTask.setStatus(AI_TASK_STATUS_CREATING);
+            aiTask.setProviderTaskId(null);
+            aiTask.setErrorMessage(null);
+        }
+
         // 创建扩图任务
         CreateOutPaintingTaskRequest createOutPaintingTaskRequest = new CreateOutPaintingTaskRequest();
 
@@ -1071,8 +1151,167 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
 
         createOutPaintingTaskRequest.setParameters(params);
 
+        if (aiTask == null) {
+            aiTask = new AiTask();
+            aiTask.setProvider(AI_PROVIDER);
+            aiTask.setUserId(loginUser.getId());
+            aiTask.setPictureId(picture.getId());
+            aiTask.setSpaceId(picture.getSpaceId());
+            aiTask.setStatus(AI_TASK_STATUS_CREATING);
+            aiTask.setIdempotencyKey(requestKey);
+            aiTask.setRequestHash(requestHash);
+            aiTask.setModel(AI_MODEL);
+            try {
+                ThrowUtils.throwIf(!aiTaskService.save(aiTask), ErrorCode.OPERATION_ERROR,
+                        "保存 AI 任务失败");
+            } catch (org.springframework.dao.DuplicateKeyException e) {
+                // 并发请求由数据库唯一键收敛，重新读取已创建的任务。
+                AiTask concurrentTask = aiTaskService.getByUserAndIdempotencyKey(loginUser.getId(), requestKey);
+                if (concurrentTask != null) {
+                    return restoreCreateResponse(concurrentTask, requestHash);
+                }
+                throw new BusinessException(ErrorCode.OPERATION_ERROR, "AI 任务创建冲突，请稍后重试");
+            }
+        }
+
         // 创建任务
-        return aliYunAIApi.createOutPaintingTask(createOutPaintingTaskRequest, loginUser);
+        try {
+            CreateOutPaintingTaskResponse response = aliYunAIApi.createOutPaintingTask(createOutPaintingTaskRequest, loginUser);
+            if (response == null || response.getOutput() == null
+                    || StrUtil.isBlank(response.getOutput().getTaskId())) {
+                throw new BusinessException(ErrorCode.OPERATION_ERROR, "AI 服务未返回有效任务 id");
+            }
+            aiTask.setProviderTaskId(response.getOutput().getTaskId());
+            aiTask.setStatus(StrUtil.blankToDefault(response.getOutput().getTaskStatus(), "PENDING"));
+            aiTask.setRequestId(response.getRequestId());
+            ThrowUtils.throwIf(!aiTaskService.updateById(aiTask), ErrorCode.OPERATION_ERROR,
+                    "保存 AI 任务失败");
+            return response;
+        } catch (BusinessException e) {
+            // 第三方返回错误或本地回写失败时，无法证明请求没有被第三方接受，
+            // 不能把任务标记为 FAILED 后允许客户端换幂等号重试，否则可能重复扣费。
+            markAiTaskUnknown(aiTask, e.getMessage());
+            throw e;
+        } catch (JsonProcessingException e) {
+            // JSON 序列化发生在 HTTP 请求发送前，可以确认第三方没有收到任务。
+            markAiTaskFailed(aiTask, e.getMessage());
+            throw e;
+        } catch (RuntimeException e) {
+            // 超时/连接断开可能发生在第三方已经创建任务之后，提交结果此时是不确定的。
+            markAiTaskUnknown(aiTask, e.getMessage());
+            log.error("调用 AI 服务结果未知，taskId={}", aiTask.getId(), e);
+            throw new BusinessException(ErrorCode.OPERATION_ERROR,
+                    "AI 任务提交结果待确认，请勿更换幂等号并稍后查询");
+        }
+    }
+
+    @Override
+    public GetOutPaintingTaskResponse getOutPaintingTask(String providerTaskId, User loginUser) {
+        ThrowUtils.throwIf(loginUser == null, ErrorCode.NO_AUTH_ERROR);
+        ThrowUtils.throwIf(StrUtil.isBlank(providerTaskId), ErrorCode.PARAMS_ERROR);
+
+        AiTask aiTask = userService.isAdmin(loginUser)
+                ? aiTaskService.getByProviderTaskId(providerTaskId)
+                : aiTaskService.getByProviderTaskIdAndUser(providerTaskId, loginUser.getId());
+        // 未找到时统一返回不存在，避免泄露其他用户的任务是否存在。
+        ThrowUtils.throwIf(aiTask == null, ErrorCode.NOT_FOUND_ERROR, "AI 任务不存在");
+
+        GetOutPaintingTaskResponse response = aliYunAIApi.getOutPaintingTask(providerTaskId);
+        if (response != null) {
+            aiTask.setRequestId(response.getRequestId());
+            if (response.getOutput() != null) {
+                aiTask.setStatus(StrUtil.blankToDefault(response.getOutput().getTaskStatus(), aiTask.getStatus()));
+                aiTask.setOutputUrl(response.getOutput().getOutputImageUrl());
+                aiTask.setErrorMessage(response.getOutput().getMessage());
+            }
+            aiTaskService.updateById(aiTask);
+        }
+        return response;
+    }
+
+    private CreateOutPaintingTaskResponse restoreCreateResponse(AiTask aiTask, String requestHash) {
+        ensureAiTaskRequestMatches(aiTask, requestHash);
+        if (AI_TASK_STATUS_FAILED.equals(aiTask.getStatus()) && StrUtil.isBlank(aiTask.getProviderTaskId())) {
+            throw new BusinessException(ErrorCode.OPERATION_ERROR,
+                    StrUtil.blankToDefault(aiTask.getErrorMessage(), "AI 任务创建失败"));
+        }
+        if (AI_TASK_STATUS_UNKNOWN.equals(aiTask.getStatus()) && StrUtil.isBlank(aiTask.getProviderTaskId())) {
+            throw new BusinessException(ErrorCode.OPERATION_ERROR,
+                    "AI 任务提交结果待确认，请勿更换幂等号并联系管理员核对");
+        }
+        if (AI_TASK_STATUS_RETRYABLE.equals(aiTask.getStatus()) && StrUtil.isBlank(aiTask.getProviderTaskId())) {
+            throw new BusinessException(ErrorCode.OPERATION_ERROR,
+                    "AI 任务已由管理员确认可重试，请使用原幂等号重新提交");
+        }
+        if (StrUtil.isBlank(aiTask.getProviderTaskId())) {
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "AI 任务正在创建，请稍后查询");
+        }
+        CreateOutPaintingTaskResponse response = new CreateOutPaintingTaskResponse();
+        CreateOutPaintingTaskResponse.Output output = new CreateOutPaintingTaskResponse.Output();
+        output.setTaskId(aiTask.getProviderTaskId());
+        output.setTaskStatus(aiTask.getStatus());
+        response.setOutput(output);
+        response.setRequestId(aiTask.getRequestId());
+        return response;
+    }
+
+    private void ensureAiTaskRequestMatches(AiTask aiTask, String requestHash) {
+        if (!StrUtil.equals(requestHash, aiTask.getRequestHash())) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,
+                    "幂等号已用于其他或无法校验的 AI 请求，请更换幂等号");
+        }
+    }
+
+    /**
+     * 生成稳定的 AI 请求指纹。这里仅用于幂等请求一致性校验，不用于密码或签名安全校验。
+     */
+    private String buildOutPaintingRequestHash(Picture picture, PictureOutPaintingParams params,
+                                               int leftOffset, int rightOffset,
+                                               int topOffset, int bottomOffset) {
+        String canonicalRequest = String.join("\u001F",
+                String.valueOf(picture.getId()),
+                StrUtil.blankToDefault(picture.getUrl(), ""),
+                String.valueOf(leftOffset),
+                String.valueOf(rightOffset),
+                String.valueOf(topOffset),
+                String.valueOf(bottomOffset),
+                String.valueOf(params.getXScale()),
+                String.valueOf(params.getYScale()),
+                String.valueOf(params.getAddWatermark()),
+                String.valueOf(params.getAngle()),
+                StrUtil.blankToDefault(params.getOutputRatio(), ""),
+                String.valueOf(params.getLimitImageSize()),
+                String.valueOf(params.getBestQuality())
+        );
+        return DigestUtils.md5DigestAsHex(canonicalRequest.getBytes(StandardCharsets.UTF_8));
+    }
+
+    private void markAiTaskFailed(AiTask aiTask, String errorMessage) {
+        aiTask.setStatus(AI_TASK_STATUS_FAILED);
+        aiTask.setErrorMessage(normalizeAiTaskError(errorMessage, "AI 任务创建失败"));
+        try {
+            aiTaskService.updateById(aiTask);
+        } catch (Exception updateException) {
+            log.error("记录 AI 任务失败状态失败，taskId={}", aiTask.getId(), updateException);
+        }
+    }
+
+    private void markAiTaskUnknown(AiTask aiTask, String errorMessage) {
+        aiTask.setStatus(AI_TASK_STATUS_UNKNOWN);
+        aiTask.setErrorMessage(normalizeAiTaskError(errorMessage,
+                "AI 任务提交结果待确认，请勿更换幂等号重试"));
+        try {
+            aiTaskService.updateById(aiTask);
+        } catch (Exception updateException) {
+            log.error("记录 AI 任务未知状态失败，taskId={}", aiTask.getId(), updateException);
+        }
+    }
+
+    private String normalizeAiTaskError(String errorMessage, String defaultMessage) {
+        if (errorMessage == null) {
+            return defaultMessage;
+        }
+        return errorMessage.length() > 512 ? errorMessage.substring(0, 512) : errorMessage;
     }
 }
 

@@ -34,7 +34,7 @@ public class DynamicShardingManager {
 
     private static final String LOGIC_TABLE_NAME = "picture";
 
-    private static final String DATABASE_NAME = "logic_db"; // 配置文件中的数据库名称
+    private static final String DATABASE_NAME = "zhe_picture"; // 配置文件中的数据库名称
 
     @PostConstruct
     public void initialize() {
@@ -65,9 +65,9 @@ public class DynamicShardingManager {
      */
     private void updateShardingTableNodes() {
         Set<String> tableNames = fetchAllPictureTableNames();
-        // yu_picture.picture_112321321,yu_picture.picture_1123213123
+        // zhe_picture.picture_112321321,zhe_picture.picture_1123213123
         String newActualDataNodes = tableNames.stream()
-                .map(tableName -> "yu_picture." + tableName) // 确保前缀合法
+                .map(tableName -> DATABASE_NAME + "." + tableName) // 确保前缀合法
                 .collect(Collectors.joining(","));
         log.info("动态分表 actual-data-nodes 配置: {}", newActualDataNodes);
 
@@ -115,7 +115,7 @@ public class DynamicShardingManager {
             Long spaceId = space.getId();
             String tableName = LOGIC_TABLE_NAME + "_" + spaceId;
             // 创建新表
-            String createTableSql = "CREATE TABLE" + tableName + "LIKE" + LOGIC_TABLE_NAME;
+            String createTableSql = "CREATE TABLE `" + tableName + "` LIKE `" + LOGIC_TABLE_NAME + "`";
             try {
                 SqlRunner.db().update(createTableSql);
                 // 更新分表

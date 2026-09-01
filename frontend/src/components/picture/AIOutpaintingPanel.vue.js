@@ -11,6 +11,8 @@ const queryTaskId = ref('');
 const pictureIdInput = ref('');
 const latestTask = ref(null);
 const taskHistory = ref([]);
+const createIdempotencyKey = ref('');
+let lastCreateFingerprint = '';
 let pollTimer = null;
 const form = reactive({
     leftOffset: 20,
@@ -84,17 +86,30 @@ function buildOutPaintingParams() {
         addWatermark: !!form.addWatermark,
     };
 }
+function createRequestIdempotencyKey() {
+    if (globalThis.crypto?.randomUUID) {
+        return globalThis.crypto.randomUUID();
+    }
+    return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
 async function handleCreate() {
     if (!effectivePictureId.value) {
         ElMessage.warning('请先提供图片 ID');
         return;
     }
+    const parameters = buildOutPaintingParams();
+    const payload = {
+        pictureId: effectivePictureId.value,
+        parameters,
+    };
+    const fingerprint = JSON.stringify(payload);
+    if (fingerprint !== lastCreateFingerprint || !createIdempotencyKey.value) {
+        lastCreateFingerprint = fingerprint;
+        createIdempotencyKey.value = createRequestIdempotencyKey();
+    }
     creating.value = true;
     try {
-        const response = await createOutPaintingTask({
-            pictureId: effectivePictureId.value,
-            parameters: buildOutPaintingParams(),
-        });
+        const response = await createOutPaintingTask(payload, createIdempotencyKey.value);
         queryTaskId.value = response.output?.taskId || '';
         ElMessage.success(`任务创建成功：${queryTaskId.value || '已受理'}`);
         if (queryTaskId.value) {
