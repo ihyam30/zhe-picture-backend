@@ -1,5 +1,6 @@
 package com.sdfkl.zhepicturebackend.manager.websocket;
 
+import com.sdfkl.zhepicturebackend.config.AppCorsProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
 import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
@@ -16,10 +17,13 @@ public class WebSocketConfig implements WebSocketConfigurer {
     @Resource
     private WsHandshakeInterceptor wsHandshakeInterceptor;
 
+    @Resource
+    private AppCorsProperties appCorsProperties;
+
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
         registry.addHandler(pictureEditHandler, "/ws/picture/edit")
                 .addInterceptors(wsHandshakeInterceptor)
-                .setAllowedOrigins("*");
+                .setAllowedOrigins(appCorsProperties.getAllowedOriginList().toArray(new String[0]));
     }
 }

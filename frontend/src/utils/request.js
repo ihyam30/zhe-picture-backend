@@ -41,7 +41,7 @@ request.interceptors.response.use((response) => {
     const code = error.response?.data?.code;
     const message = error.response?.data?.message ||
         (error.message === 'Network Error'
-            ? '网络连接失败，请确认后端服务 http://localhost:8123 已启动，且接口 /api 可访问'
+            ? '网络连接失败，请确认前端代理或后端服务已启动，且接口 /api 可访问'
             : error.message) ||
         '网络异常，请稍后重试';
     ElMessage.error(message);

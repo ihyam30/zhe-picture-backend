@@ -254,6 +254,9 @@ mysql -u root -p < sql/create_table.sql
 | `COS_SECRET_KEY` | 腾讯云 COS SecretKey |
 | `ALIYUN_API_KEY` | 阿里云 AI API Key |
 | `COS_HOST` / `COS_REGION` / `COS_BUCKET` | COS 非敏感连接参数 |
+| `APP_CORS_ALLOWED_ORIGINS` | 允许访问后端的浏览器来源，多个来源用英文逗号分隔，禁止使用 `*` |
+| `SA_TOKEN_COOKIE_SECURE` | 是否为登录 Cookie 设置 `Secure`；HTTPS 生产环境必须为 `true` |
+| `SA_TOKEN_COOKIE_SAMESITE` | 登录 Cookie 的 SameSite 策略，生产默认使用 `Lax` |
 
 不要把真实凭证写入 `application.yml`、`application-local.yml`、`.env`、README 或提交信息。
 凭证泄露后应立即在云平台禁用并重新创建，不能只依赖删除工作区文件。
@@ -285,12 +288,43 @@ npm run dev
 
 默认访问地址：`http://localhost:5173`
 
+#### 6. 同源部署与反向代理
+
+方案 B 默认让浏览器只访问当前站点的 `/api` 和 WebSocket 路径：开发环境由 Vite 代理到
+`http://localhost:8123`，生产环境由 Nginx 等反向代理转发到后端。这样登录 Cookie、普通接口和 WebSocket
+共享同一站点，减少跨域和 Cookie 属性不一致导致的问题。
+
+Nginx 配置示例见 `deploy/nginx/picture.conf.example`。代理必须保留 `/api` 前缀，并转发
+`Upgrade`、`Connection`、`Host`、`X-Forwarded-For` 和 `X-Forwarded-Proto` 请求头。
+
+生产环境示例：
+
+```text
+APP_CORS_ALLOWED_ORIGINS=https://picture.example.com
+SA_TOKEN_COOKIE_SECURE=true
+SA_TOKEN_COOKIE_SAMESITE=Lax
+```
+
+本地开发示例：
+
+```text
+APP_CORS_ALLOWED_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
+SA_TOKEN_COOKIE_SECURE=false
+SA_TOKEN_COOKIE_SAMESITE=Lax
+```
+
+启用 Cookie 凭证时不要把 `APP_CORS_ALLOWED_ORIGINS` 配置为 `*`。如果前端开发服务器不在本机，
+可以设置 `DEV_API_TARGET` 指向可访问的后端地址，Vite 会同时代理 HTTP 和 WebSocket 请求。
+
 ### 访问测试
 
 1. 打开 `http://localhost:5173` 进入登录页。
 2. 使用管理员账号登录（初始可通过数据库插入用户，密码为 MD5 加密后的结果；管理员添加用户的默认密码为 `19880314`）。
 3. 测试图片上传、空间创建、成员邀请、颜色搜索、AI 扩图等功能。
 4. 多开浏览器标签页进入同一张图片详情页，测试 WebSocket 协同编辑消息。
+5. 浏览器开发者工具中确认接口请求为当前站点的 `/api/...`，WebSocket 地址为当前站点的
+   `ws://.../api/ws/picture/edit` 或 `wss://.../api/ws/picture/edit`。
+6. 使用未配置的来源访问时，HTTP 预检和 WebSocket 握手都应被拒绝。
 
 ---
 
