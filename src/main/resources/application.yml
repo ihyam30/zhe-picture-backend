@@ -39,7 +39,7 @@ spring:
         driver-class-name: com.mysql.cj.jdbc.Driver
         url: jdbc:mysql://localhost:3306/zhe_picture
         username: root
-        password: <REDACTED>
+        password: ${DB_PASSWORD:}
     rules:
       sharding:
         tables:
@@ -64,13 +64,13 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/zhe_picture
     username: root
-    password: <REDACTED>
+    password: ${DB_PASSWORD:}
   # Redis 配置
   redis:
     database: 5
     host: localhost
     port: 6379
-    password: <REDACTED>
+    password: ${REDIS_PASSWORD:}
     timeout: 5000
   profiles:
     active: local

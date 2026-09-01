@@ -239,33 +239,24 @@ cd zhe-picture-backend
 mysql -u root -p < sql/create_table.sql
 ```
 
-#### 3. 修改配置文件
+#### 3. 配置本地环境
 
-打开 `src/main/resources/application.yml` 与 `application-local.yml`，按需修改：
+复制 `application-local.example.yml` 为
+`src/main/resources/application-local.yml`。该文件已被 Git 忽略，不能提交到仓库。
 
-```yaml
-# application.yml
-spring:
-  datasource:
-    url: jdbc:mysql://localhost:3306/zhe_picture
-    username: root
-    password: <REDACTED>
-  redis:
-    host: localhost
-    port: 6379
-    password: <REDACTED>
+所有密码和服务凭证都通过本机环境变量注入，变量名如下：
 
-# application-local.yml
-cos:
-  client:
-    secretId: <REDACTED>
-    secretKey: <REDACTED>
-    region: ap-你的地域
-    bucket: 你的 bucket
+| 环境变量 | 用途 |
+| --- | --- |
+| `DB_PASSWORD` | MySQL 和分片数据源密码 |
+| `REDIS_PASSWORD` | Redis 密码 |
+| `COS_SECRET_ID` | 腾讯云 COS SecretId |
+| `COS_SECRET_KEY` | 腾讯云 COS SecretKey |
+| `ALIYUN_API_KEY` | 阿里云 AI API Key |
+| `COS_HOST` / `COS_REGION` / `COS_BUCKET` | COS 非敏感连接参数 |
 
-aliyun:
-  apiKey: <REDACTED>
-```
+不要把真实凭证写入 `application.yml`、`application-local.yml`、`.env`、README 或提交信息。
+凭证泄露后应立即在云平台禁用并重新创建，不能只依赖删除工作区文件。
 
 如需开启图片表分片，请确保数据库中已创建对应分表（如 `picture_1`、`picture_2`），或在 `PictureShardingAlgorithm` 中调整默认路由策略。
 
