@@ -1,6 +1,7 @@
 import { computed, onBeforeUnmount, ref, unref, watch } from 'vue';
 import { WS_BASE_URL } from '@/constants/app';
 import { useAuthStore } from '@/store/auth';
+const HEARTBEAT_INTERVAL_MS = 5000;
 function getPayloadUser(payload) {
     return 'user' in payload ? payload.user : undefined;
 }
@@ -44,6 +45,10 @@ export function usePictureWebSocket(pictureId) {
     const editingUser = ref(null);
     const messages = ref([]);
     const latestEditAction = ref(null);
+    let heartbeatTimer = null;
+    let reconnectTimer = null;
+    let reconnectAttempt = 0;
+    let manuallyClosed = false;
     const currentPictureId = computed(() => unref(pictureId));
     const wsUrl = computed(() => {
         if (!currentPictureId.value) {
@@ -80,7 +85,17 @@ export function usePictureWebSocket(pictureId) {
         onlineUsers.value = onlineUsers.value.filter((item) => String(item.id) !== String(user.id));
     }
     function handleIncomingMessage(event) {
-        const payload = JSON.parse(event.data);
+        let payload;
+        try {
+            payload = JSON.parse(event.data);
+        }
+        catch {
+            pushMessage({ type: 'ERROR', message: '收到无法解析的协同消息' });
+            return;
+        }
+        if (payload.type === 'PONG') {
+            return;
+        }
         if (payload.type === 'INFO') {
             if (payload.user) {
                 upsertOnlineUser(payload.user);
@@ -116,20 +131,52 @@ export function usePictureWebSocket(pictureId) {
         }
         socket.value.send(JSON.stringify(message));
     }
+    function clearHeartbeat() {
+        if (heartbeatTimer !== null) {
+            window.clearInterval(heartbeatTimer);
+            heartbeatTimer = null;
+        }
+    }
+    function clearReconnect() {
+        if (reconnectTimer !== null) {
+            window.clearTimeout(reconnectTimer);
+            reconnectTimer = null;
+        }
+    }
+    function scheduleReconnect() {
+        if (manuallyClosed || reconnectTimer !== null || !currentPictureId.value) {
+            return;
+        }
+        const delay = Math.min(30000, 1000 * 2 ** Math.min(reconnectAttempt, 5));
+        reconnectAttempt += 1;
+        reconnectTimer = window.setTimeout(() => {
+            reconnectTimer = null;
+            void connect();
+        }, delay);
+    }
     async function connect() {
+        manuallyClosed = false;
+        clearReconnect();
         if (!authStore.isLogin) {
             await authStore.fetchCurrentUser({ silent: true });
         }
-        if (!authStore.isLogin || !wsUrl.value) {
+        if (manuallyClosed || !authStore.isLogin || !wsUrl.value) {
             return;
         }
         if (socket.value &&
             (socket.value.readyState === WebSocket.OPEN || socket.value.readyState === WebSocket.CONNECTING)) {
             return;
         }
-        socket.value = new WebSocket(wsUrl.value);
-        socket.value.onopen = () => {
+        const currentSocket = new WebSocket(wsUrl.value);
+        socket.value = currentSocket;
+        currentSocket.onopen = () => {
+            if (socket.value !== currentSocket) {
+                return;
+            }
+            reconnectAttempt = 0;
             isConnected.value = true;
+            clearHeartbeat();
+            heartbeatTimer = window.setInterval(() => send({ type: 'HEARTBEAT' }), HEARTBEAT_INTERVAL_MS);
             if (authStore.user) {
                 upsertOnlineUser({
                     id: authStore.user.id,
@@ -143,20 +190,29 @@ export function usePictureWebSocket(pictureId) {
             }
             pushMessage({ type: 'INFO', message: '已建立协同编辑连接' });
         };
-        socket.value.onmessage = handleIncomingMessage;
-        socket.value.onerror = () => {
+        currentSocket.onmessage = handleIncomingMessage;
+        currentSocket.onerror = () => {
             pushMessage({ type: 'ERROR', message: '协同编辑连接出现异常' });
         };
-        socket.value.onclose = () => {
+        currentSocket.onclose = () => {
+            if (socket.value !== currentSocket) {
+                return;
+            }
+            clearHeartbeat();
+            socket.value = null;
             isConnected.value = false;
             editingUser.value = null;
             onlineUsers.value = authStore.user
                 ? onlineUsers.value.filter((item) => String(item.id) === String(authStore.user?.id || ''))
                 : [];
             pushMessage({ type: 'INFO', message: '协同编辑连接已关闭' });
+            scheduleReconnect();
         };
     }
     function disconnect() {
+        manuallyClosed = true;
+        clearReconnect();
+        clearHeartbeat();
         if (socket.value) {
             socket.value.close();
             socket.value = null;

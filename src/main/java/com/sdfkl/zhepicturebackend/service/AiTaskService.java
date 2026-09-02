@@ -4,6 +4,9 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.sdfkl.zhepicturebackend.model.entity.AiTask;
 
+import java.util.Date;
+import java.util.List;
+
 public interface AiTaskService extends IService<AiTask> {
 
     AiTask getByUserAndIdempotencyKey(Long userId, String idempotencyKey);
@@ -33,4 +36,14 @@ public interface AiTaskService extends IService<AiTask> {
     void bindProviderTask(Long taskId, String providerTaskId, String requestId);
 
     Page<AiTask> pageUnresolved(long current, long pageSize);
+
+    /**
+     * 查询待轮询任务。具体处理前仍需通过 claimPollTask 原子认领。
+     */
+    List<AiTask> listPollable(Date now, int limit);
+
+    /**
+     * 使用数据库条件更新给当前实例的轮询租约。
+     */
+    boolean claimPollTask(Long taskId, Date now, Date leaseUntil);
 }

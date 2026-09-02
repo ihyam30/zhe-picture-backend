@@ -198,9 +198,13 @@ zhe-picture-backend/
 | error_message | varchar(512) | 失败原因 |
 | request_id / model | varchar | 第三方请求和模型信息 |
 | cost_amount / currency | decimal/varchar | 调用费用和币种 |
+| retry_count / next_retry_time | int/datetime | 轮询失败次数和下一次处理时间 |
+| timeout_time / last_polled_time / lease_until | datetime | 超时、最近轮询和多实例处理租约 |
+| submit_time / scheduled_time / end_time | varchar | 第三方任务时间信息 |
+| metrics_total / metrics_succeeded / metrics_failed | int | 第三方任务统计信息 |
 | create_time / update_time | datetime | 时间戳 |
 
-AI 任务查询必须先按当前用户过滤，再使用第三方任务 ID 查询；管理员可查询全局任务。标签短期继续保存为 JSON，后续拆分为标签表时应结合图片动态分表策略增加空间路由字段。
+AI 任务查询必须先按当前用户过滤，再使用本地任务 ID 查询；管理员可查询全局任务。旧客户端仍可通过第三方任务 ID 兼容查询，但服务端只返回本地数据库快照，不会在用户查询请求中同步调用供应商。标签短期继续保存为 JSON，后续拆分为标签表时应结合图片动态分表策略增加空间路由字段。
 
 AI 提交结果不确定时，服务端不会自动换幂等号重试：`CREATING` 任务超过
 `AI_TASK_RECOVERY_CREATING_TIMEOUT_MS` 后由后台扫描转为 `UNKNOWN`。管理员可通过
@@ -209,7 +213,8 @@ AI 提交结果不确定时，服务端不会自动换幂等号重试：`CREATIN
 重新提交。若能从第三方日志或控制台找回 taskId，应调用
 `POST /api/aiTask/admin/bind` 绑定任务，禁止直接换幂等号重试。
 
-数据库表结构由 `src/main/resources/db/migration/` 下的 Flyway 脚本管理，当前迁移版本为 V11。
+数据库表结构由 `src/main/resources/db/migration/` 下的 Flyway 脚本管理，当前迁移版本为 V12。V12 新增 AI 任务轮询租约和 `ai_usage_record` 费用流水表。
+费用流水按 `AI_TASK_USAGE_UNIT_COST` 配置的单次模型单价记录，默认值为 `0`，上线前应按供应商实际计费规则配置。
 
 ---
 
@@ -243,7 +248,8 @@ http://localhost:8123/api/doc.html
 - `POST /api/picture/list/page/vo`：分页查询图片（公开/空间）
 - `POST /api/picture/search/color`：按颜色搜索图片
 - `POST /api/picture/out_painting/create_task`：创建 AI 扩图任务
-- `GET /api/picture/out_painting/get_task`：查询当前用户有权访问的 AI 扩图任务
+- `GET /api/aiTask/my?taskId=...`：查询当前用户自己的 AI 任务快照，数字参数按本地任务 ID 查询，其他参数兼容供应商任务 ID
+- `GET /api/picture/out_painting/get_task`：按第三方任务 ID 兼容查询本地任务快照
 - `POST /api/picture/review`：管理员审核图片
 - `POST /api/space/add`：创建空间
 - `POST /api/space/analyze/usage`：空间使用情况分析
@@ -251,7 +257,9 @@ http://localhost:8123/api/doc.html
 
 图片上传建议在请求头中携带唯一的 `Idempotency-Key`。同一个幂等号只代表一次上传操作；成功后重复请求会返回原结果，失败或处理中请更换幂等号。上传完成后的缩略图和压缩图由 Outbox Worker 异步生成。
 
-AI 扩图创建接口必须携带 `Idempotency-Key` 请求头。服务端会把任务归属、第三方任务 ID、状态和结果写入 `ai_task`，重复请求会返回同一个第三方任务；客户端在网络失败或结果未知时必须复用原幂等号重试，不能静默更换幂等号。
+AI 扩图创建接口必须携带 `Idempotency-Key` 请求头。服务端会把任务归属、第三方任务 ID、状态和结果写入 `ai_task`，并使用 Redis 原子限制用户和空间的每日调用次数。第三方任务创建成功后由后台 Worker 轮询，失败使用指数退避，超时进入终态；供应商连续失败时会触发熔断。客户端在网络失败或结果未知时必须复用原幂等号重试，不能静默更换幂等号。每个本地任务对应一条 `ai_usage_record` 流水，重试不会重复创建费用记录。
+
+WebSocket 第一版只承诺在线状态、编辑锁和动作通知，不实现 OT/CRDT 多人文档编辑。编辑锁使用 Redis 原子加锁和 TTL，连接数按用户限制，客户端发送心跳，服务端清理断线连接和过期锁；编辑动作通过 Redis Pub/Sub 在多实例间广播，非法 JSON、未知动作和超大消息会返回错误或被拒绝。
 
 孤儿对象扫描默认关闭，确认历史对象 key 已迁移且 COS 前缀配置正确后，再设置
 `PICTURE_ORPHAN_SCAN_ENABLED=true` 开启。对象删除、失败补偿和衍生图生成由 Outbox Worker
@@ -285,7 +293,7 @@ mysql -u root -p < sql/create_database.sql
 mvn spring-boot:run
 ```
 
-应用启动时 Flyway 会自动按 V1～V11 执行迁移。不要再手工执行旧版 `create_table.sql` 或阶段迁移脚本。
+应用启动时 Flyway 会自动按 V1～V12 执行迁移。不要再手工执行旧版 `create_table.sql` 或阶段迁移脚本。
 
 已有数据库首次接入 Flyway 时，必须先备份并核对当前库已经包含用户、空间、图片和空间成员基础表。V8 会为旧图片表（包括 `picture_{spaceId}` 分表）补齐第二阶段上传字段和空间预留字段。确认后仅在第一次启动时设置：
 
@@ -295,7 +303,7 @@ $env:FLYWAY_BASELINE_VERSION = "4"
 mvn spring-boot:run
 ```
 
-启动成功后移除 `FLYWAY_BASELINE_ON_MIGRATE`，后续由 Flyway 继续执行 V5～V11。数据库结构不确定时不要直接 baseline，应先在测试库演练迁移。
+启动成功后移除 `FLYWAY_BASELINE_ON_MIGRATE`，后续由 Flyway 继续执行 V5～V12。数据库结构不确定时不要直接 baseline，应先在测试库演练迁移。
 
 #### 3. 配置本地环境
 
@@ -319,6 +327,13 @@ mvn spring-boot:run
 | `SA_TOKEN_COOKIE_SAMESITE` | 登录 Cookie 的 SameSite 策略，生产默认使用 `Lax` |
 | `AI_TASK_RECOVERY_FIXED_DELAY_MS` | AI 异常任务扫描间隔，默认 60 秒 |
 | `AI_TASK_RECOVERY_CREATING_TIMEOUT_MS` | `CREATING` 任务转为 `UNKNOWN` 的等待时间，默认 15 分钟 |
+| `AI_TASK_USER_DAILY_LIMIT` / `AI_TASK_SPACE_DAILY_LIMIT` | 用户/空间每日 AI 调用次数上限 |
+| `AI_TASK_POLL_FIXED_DELAY_MS` / `AI_TASK_POLL_BATCH_SIZE` | AI 任务轮询间隔和批量大小 |
+| `AI_TASK_RETRY_MAX_ATTEMPTS` / `AI_TASK_RETRY_BASE_DELAY_MS` | AI 轮询失败最大次数和指数退避初始时长 |
+| `AI_TASK_TIMEOUT_MS` | 单个 AI 任务最大处理时长 |
+| `WEBSOCKET_MAX_CONNECTIONS_PER_USER` | 单用户 WebSocket 最大连接数 |
+| `WEBSOCKET_HEARTBEAT_TIMEOUT_MS` / `WEBSOCKET_EDIT_LOCK_TTL_MS` | 心跳失效和编辑锁过期时间 |
+| `WEBSOCKET_MESSAGE_MAX_BYTES` | 单条 WebSocket 消息最大字节数 |
 
 不要把真实凭证写入 `application.yml`、`application-local.yml`、`.env`、README 或提交信息。
 凭证泄露后应立即在云平台禁用并重新创建，不能只依赖删除工作区文件。

@@ -5,10 +5,15 @@ import com.sdfkl.zhepicturebackend.annotation.AuthCheck;
 import com.sdfkl.zhepicturebackend.common.BaseResponse;
 import com.sdfkl.zhepicturebackend.common.ResultUtils;
 import com.sdfkl.zhepicturebackend.constant.UserConstant;
+import com.sdfkl.zhepicturebackend.exception.BusinessException;
 import com.sdfkl.zhepicturebackend.exception.ErrorCode;
 import com.sdfkl.zhepicturebackend.exception.ThrowUtils;
+import com.sdfkl.zhepicturebackend.manager.auth.CurrentUserService;
 import com.sdfkl.zhepicturebackend.model.dto.aitask.AiTaskRecoveryRequest;
 import com.sdfkl.zhepicturebackend.model.entity.AiTask;
+import com.sdfkl.zhepicturebackend.model.entity.User;
+import com.sdfkl.zhepicturebackend.api.aliyunai.model.GetOutPaintingTaskResponse;
+import com.sdfkl.zhepicturebackend.service.AiTaskApplicationService;
 import com.sdfkl.zhepicturebackend.service.AiTaskService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -30,6 +35,45 @@ public class AiTaskController {
 
     @Resource
     private AiTaskService aiTaskService;
+
+    @Resource
+    private AiTaskApplicationService aiTaskApplicationService;
+
+    @Resource
+    private CurrentUserService currentUserService;
+
+    /**
+     * 查询当前用户自己的 AI 任务。数字参数按本地任务 ID 查询，其他参数兼容供应商任务 ID；
+     * 两条路径都只读当前用户可见的数据库快照，不同步调用供应商。
+     */
+    @GetMapping("/my")
+    public BaseResponse<GetOutPaintingTaskResponse> getMyTask(@RequestParam String taskId) {
+        User loginUser = currentUserService.getRequiredUser();
+        ThrowUtils.throwIf(taskId == null || taskId.trim().isEmpty(),
+                ErrorCode.PARAMS_ERROR, "AI 任务 ID 不能为空");
+        String normalizedTaskId = taskId.trim();
+        GetOutPaintingTaskResponse response;
+        if (normalizedTaskId.matches("\\d+")) {
+            try {
+                response = aiTaskApplicationService.getOutPaintingTask(
+                        Long.valueOf(normalizedTaskId), loginUser);
+            } catch (NumberFormatException e) {
+                response = aiTaskApplicationService.getOutPaintingTaskByProviderTaskId(
+                        normalizedTaskId, loginUser);
+            } catch (BusinessException e) {
+                if (e.getCode() != ErrorCode.NOT_FOUND_ERROR.getCode()) {
+                    throw e;
+                }
+                // 供应商任务 ID 通常包含字母，但兼容纯数字 ID，避免与本地 ID 规则冲突。
+                response = aiTaskApplicationService.getOutPaintingTaskByProviderTaskId(
+                        normalizedTaskId, loginUser);
+            }
+        } else {
+            response = aiTaskApplicationService.getOutPaintingTaskByProviderTaskId(
+                    normalizedTaskId, loginUser);
+        }
+        return ResultUtils.success(response);
+    }
 
     @GetMapping("/admin/unresolved")
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)

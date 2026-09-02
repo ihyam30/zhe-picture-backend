@@ -68,6 +68,54 @@ public class AiTask implements Serializable {
     @TableField("currency")
     private String currency;
 
+    /**
+     * 已经尝试调用供应商的次数。
+     */
+    @TableField("retry_count")
+    private Integer retryCount;
+
+    /**
+     * 下一次轮询或重试时间。
+     */
+    @TableField("next_retry_time")
+    private Date nextRetryTime;
+
+    /**
+     * 任务的最终超时时间。
+     */
+    @TableField("timeout_time")
+    private Date timeoutTime;
+
+    /**
+     * 最近一次轮询时间。
+     */
+    @TableField("last_polled_time")
+    private Date lastPolledTime;
+
+    /**
+     * 轮询租约到期时间，用于多实例下避免重复处理。
+     */
+    @TableField("lease_until")
+    private Date leaseUntil;
+
+    @TableField("submit_time")
+    private String submitTime;
+
+    @TableField("scheduled_time")
+    private String scheduledTime;
+
+    @TableField("end_time")
+    private String endTime;
+
+    @TableField("metrics_total")
+    private Integer metricsTotal;
+
+    @TableField("metrics_succeeded")
+    private Integer metricsSucceeded;
+
+    @TableField("metrics_failed")
+    private Integer metricsFailed;
+
     @TableField("create_time")
     private Date createTime;
 

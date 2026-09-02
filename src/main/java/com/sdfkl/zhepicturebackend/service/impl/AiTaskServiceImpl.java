@@ -11,6 +11,9 @@ import com.sdfkl.zhepicturebackend.exception.BusinessException;
 import com.sdfkl.zhepicturebackend.exception.ErrorCode;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
+import java.util.List;
+
 @Service
 public class AiTaskServiceImpl extends ServiceImpl<AiTaskMapper, AiTask>
         implements AiTaskService {
@@ -144,6 +147,39 @@ public class AiTaskServiceImpl extends ServiceImpl<AiTaskMapper, AiTask>
                         .eq(AiTask::getProviderTaskId, ""))
                 .orderByAsc(AiTask::getCreateTime)
                 .getWrapper());
+    }
+
+    @Override
+    public List<AiTask> listPollable(Date now, int limit) {
+        return lambdaQuery()
+                .in(AiTask::getStatus,
+                        AiTaskStatusEnum.PENDING.name(),
+                        AiTaskStatusEnum.RUNNING.name(),
+                        AiTaskStatusEnum.RETRY_WAIT.name())
+                .and(wrapper -> wrapper.isNull(AiTask::getNextRetryTime)
+                        .or().le(AiTask::getNextRetryTime, now))
+                .and(wrapper -> wrapper.isNull(AiTask::getLeaseUntil)
+                        .or().lt(AiTask::getLeaseUntil, now))
+                .orderByAsc(AiTask::getNextRetryTime)
+                .last("LIMIT " + Math.max(1, Math.min(limit, 100)))
+                .list();
+    }
+
+    @Override
+    public boolean claimPollTask(Long taskId, Date now, Date leaseUntil) {
+        return lambdaUpdate()
+                .eq(AiTask::getId, taskId)
+                .in(AiTask::getStatus,
+                        AiTaskStatusEnum.PENDING.name(),
+                        AiTaskStatusEnum.RUNNING.name(),
+                        AiTaskStatusEnum.RETRY_WAIT.name())
+                .and(wrapper -> wrapper.isNull(AiTask::getNextRetryTime)
+                        .or().le(AiTask::getNextRetryTime, now))
+                .and(wrapper -> wrapper.isNull(AiTask::getLeaseUntil)
+                        .or().lt(AiTask::getLeaseUntil, now))
+                .set(AiTask::getLeaseUntil, leaseUntil)
+                .set(AiTask::getLastPolledTime, now)
+                .update();
     }
 
     private String normalizeError(String errorMessage, String defaultMessage) {

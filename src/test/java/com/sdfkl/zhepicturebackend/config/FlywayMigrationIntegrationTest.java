@@ -37,7 +37,7 @@ class FlywayMigrationIntegrationTest {
 
         flyway.migrate();
 
-        assertEquals(11, flyway.info().applied().length);
+        assertEquals(12, flyway.info().applied().length);
         try (Connection connection = DriverManager.getConnection(
                 MYSQL.getJdbcUrl(), MYSQL.getUsername(), MYSQL.getPassword())) {
             assertEquals(1, count(connection,

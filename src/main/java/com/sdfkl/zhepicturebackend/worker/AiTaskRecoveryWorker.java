@@ -3,6 +3,7 @@ package com.sdfkl.zhepicturebackend.worker;
 import com.sdfkl.zhepicturebackend.model.entity.AiTask;
 import com.sdfkl.zhepicturebackend.model.enums.AiTaskStatusEnum;
 import com.sdfkl.zhepicturebackend.service.AiTaskService;
+import com.sdfkl.zhepicturebackend.service.AiUsageRecordService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -21,6 +22,9 @@ public class AiTaskRecoveryWorker {
 
     @Resource
     private AiTaskService aiTaskService;
+
+    @Resource
+    private AiUsageRecordService aiUsageRecordService;
 
     @Value("${ai-task.recovery.creating-timeout-ms:900000}")
     private long creatingTimeoutMs;
@@ -41,6 +45,8 @@ public class AiTaskRecoveryWorker {
                 boolean updated = aiTaskService.markUnknownIfCreating(task.getId(),
                         "AI 任务提交状态超时，请管理员核对第三方任务");
                 if (updated) {
+                    aiUsageRecordService.markFailed(task.getId(), "UNKNOWN",
+                            "AI 任务提交状态超时，请管理员核对第三方任务");
                     log.warn("AI 任务已转为 UNKNOWN，taskId={}", task.getId());
                 }
             }
