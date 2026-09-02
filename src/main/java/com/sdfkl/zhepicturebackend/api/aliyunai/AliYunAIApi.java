@@ -23,6 +23,12 @@ public class AliYunAIApi {
     @Value("${aliyun.apiKey}")
     private String apiKey;
 
+    @Value("${ai-task.provider.connect-timeout-ms:5000}")
+    private int connectTimeoutMs;
+
+    @Value("${ai-task.provider.read-timeout-ms:15000}")
+    private int readTimeoutMs;
+
     // 创建扩图任务接口地址
     private static final String CREATE_OUT_PAINTING_TASK_URL = "https://dashscope.aliyuncs.com/api/v1/services/aigc/image2image/out-painting";
 
@@ -45,6 +51,8 @@ public class AliYunAIApi {
                 .header("Authorization", "Bearer " + apiKey)
                 .header("X-DashScope-Async", "enable")
                 .header("Content-Type", "application/json")
+                .setConnectionTimeout(Math.max(1000, connectTimeoutMs))
+                .setReadTimeout(Math.max(1000, readTimeoutMs))
                 .body(mapper.writeValueAsString(request));
         //处理响应
         try (HttpResponse httpResponse = httpRequest.execute()) {
@@ -76,6 +84,8 @@ public class AliYunAIApi {
         String url = String.format(GET_OUT_PAINTING_TASK_URL, taskId);
         try (HttpResponse httpResponse = HttpRequest.get(url)
                 .header("Authorization", "Bearer " + apiKey)
+                .setConnectionTimeout(Math.max(1000, connectTimeoutMs))
+                .setReadTimeout(Math.max(1000, readTimeoutMs))
                 .execute()) {
             if (!httpResponse.isOk()) {
                 log.error("请求异常：{}", httpResponse.body());

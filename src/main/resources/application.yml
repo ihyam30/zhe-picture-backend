@@ -47,11 +47,46 @@ outbox:
     batch-size: ${OUTBOX_WORKER_BATCH_SIZE:20}
     max-retries: ${OUTBOX_WORKER_MAX_RETRIES:8}
 ai-task:
+  quota:
+    user-daily-limit: ${AI_TASK_USER_DAILY_LIMIT:20}
+    space-daily-limit: ${AI_TASK_SPACE_DAILY_LIMIT:100}
+    key-expire-seconds: ${AI_TASK_QUOTA_KEY_EXPIRE_SECONDS:172800}
+  provider:
+    connect-timeout-ms: ${AI_TASK_PROVIDER_CONNECT_TIMEOUT_MS:5000}
+    read-timeout-ms: ${AI_TASK_PROVIDER_READ_TIMEOUT_MS:15000}
+  circuit-breaker:
+    failure-threshold: ${AI_TASK_CIRCUIT_FAILURE_THRESHOLD:5}
+    open-ms: ${AI_TASK_CIRCUIT_OPEN_MS:60000}
+  poll:
+    fixed-delay-ms: ${AI_TASK_POLL_FIXED_DELAY_MS:10000}
+    batch-size: ${AI_TASK_POLL_BATCH_SIZE:20}
+    interval-ms: ${AI_TASK_POLL_INTERVAL_MS:10000}
+    lease-timeout-ms: ${AI_TASK_POLL_LEASE_TIMEOUT_MS:60000}
+  retry:
+    max-attempts: ${AI_TASK_RETRY_MAX_ATTEMPTS:6}
+    base-delay-ms: ${AI_TASK_RETRY_BASE_DELAY_MS:10000}
+    max-delay-ms: ${AI_TASK_RETRY_MAX_DELAY_MS:3600000}
+  timeout-ms: ${AI_TASK_TIMEOUT_MS:1800000}
+  usage:
+    default-currency: ${AI_TASK_USAGE_CURRENCY:CNY}
+    unit-cost: ${AI_TASK_USAGE_UNIT_COST:0}
   recovery:
     fixed-delay-ms: ${AI_TASK_RECOVERY_FIXED_DELAY_MS:60000}
     creating-timeout-ms: ${AI_TASK_RECOVERY_CREATING_TIMEOUT_MS:900000}
 aliyun:
   apiKey: ${ALIYUN_API_KEY:}
+websocket:
+  redis:
+    enabled: ${WEBSOCKET_REDIS_ENABLED:true}
+  message:
+    max-bytes: ${WEBSOCKET_MESSAGE_MAX_BYTES:65536}
+  connection:
+    max-per-user: ${WEBSOCKET_MAX_CONNECTIONS_PER_USER:3}
+  heartbeat:
+    timeout-ms: ${WEBSOCKET_HEARTBEAT_TIMEOUT_MS:60000}
+    cleanup-delay-ms: ${WEBSOCKET_HEARTBEAT_CLEANUP_DELAY_MS:10000}
+  edit-lock:
+    ttl-ms: ${WEBSOCKET_EDIT_LOCK_TTL_MS:60000}
 spring:
   servlet:
     multipart:

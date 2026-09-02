@@ -5,7 +5,7 @@ export function createOutPaintingTask(data, idempotencyKey) {
     });
 }
 export function getOutPaintingTask(taskId) {
-    return request.get('/picture/out_painting/get_task', {
+    return request.get('/aiTask/my', {
         params: { taskId },
     });
 }

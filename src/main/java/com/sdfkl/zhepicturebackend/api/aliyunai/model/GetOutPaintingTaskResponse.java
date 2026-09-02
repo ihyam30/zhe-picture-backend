@@ -13,6 +13,11 @@ import lombok.NoArgsConstructor;
 public class GetOutPaintingTaskResponse {
 
     /**
+     * 本地任务 ID。
+     */
+    private Long localTaskId;
+
+    /**
      * 请求唯一标识
      */
     private String requestId;

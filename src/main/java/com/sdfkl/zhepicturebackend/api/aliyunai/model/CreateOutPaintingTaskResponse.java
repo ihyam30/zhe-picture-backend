@@ -12,6 +12,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class CreateOutPaintingTaskResponse {
 
+    /**
+     * 本地任务 ID。客户端后续应优先使用该 ID 查询，避免依赖供应商实现细节。
+     */
+    private Long localTaskId;
+
     private Output output;
 
     /**

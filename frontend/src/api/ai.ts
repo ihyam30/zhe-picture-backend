@@ -17,7 +17,7 @@ export function createOutPaintingTask(data: CreatePictureOutPaintingTaskRequest,
 
 export function getOutPaintingTask(taskId: string) {
   return request.get<never, GetOutPaintingTaskResponse>(
-    '/picture/out_painting/get_task',
+    '/aiTask/my',
     {
       params: { taskId },
     },

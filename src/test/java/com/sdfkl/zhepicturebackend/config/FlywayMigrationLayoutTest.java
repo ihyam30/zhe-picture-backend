@@ -24,7 +24,8 @@ class FlywayMigrationLayoutTest {
             "V8__add_picture_upload_columns.sql",
             "V9__add_picture_indexes.sql",
             "V10__migrate_picture_object_keys.sql",
-            "V11__add_ai_task_request_hash.sql"
+            "V11__add_ai_task_request_hash.sql",
+            "V12__add_ai_task_retry_and_usage.sql"
     );
 
     @Test
@@ -52,6 +53,18 @@ class FlywayMigrationLayoutTest {
         assertTrue(migration.contains("uploadStatus"));
         assertTrue(migration.contains("reservedSize"));
         assertTrue(migration.contains("reservedCount"));
+    }
+
+    @Test
+    void shouldDefineAiRetryAndUsageFields() {
+        String migration = readMigration("V12__add_ai_task_retry_and_usage.sql");
+        assertTrue(migration.contains("retry_count"));
+        assertTrue(migration.contains("next_retry_time"));
+        assertTrue(migration.contains("lease_until"));
+        assertTrue(migration.contains("submit_time"));
+        assertTrue(migration.contains("metrics_succeeded"));
+        assertTrue(migration.contains("CREATE TABLE IF NOT EXISTS ai_usage_record"));
+        assertTrue(migration.contains("uk_ai_usage_task"));
     }
 
     private String readMigration(String name) {

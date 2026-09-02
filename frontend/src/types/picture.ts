@@ -110,6 +110,7 @@ export interface CreatePictureOutPaintingTaskRequest {
 }
 
 export interface CreateOutPaintingTaskResponse {
+  localTaskId?: Id;
   output?: {
     taskId?: string;
     taskStatus?: string;
@@ -120,6 +121,7 @@ export interface CreateOutPaintingTaskResponse {
 }
 
 export interface GetOutPaintingTaskResponse {
+  localTaskId?: Id;
   requestId?: string;
   output?: {
     taskId?: string;

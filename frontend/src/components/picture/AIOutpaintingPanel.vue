@@ -70,11 +70,22 @@ function clearPolling() {
 
 function upsertTask(task: GetOutPaintingTaskResponse) {
   latestTask.value = task;
-  const taskId = task.output?.taskId;
-  if (!taskId) {
+  const taskKey = task.localTaskId
+    ? `local:${String(task.localTaskId)}`
+    : task.output?.taskId
+      ? `provider:${task.output.taskId}`
+      : '';
+  if (!taskKey) {
     return;
   }
-  const exists = taskHistory.value.findIndex((item) => item.output?.taskId === taskId);
+  const exists = taskHistory.value.findIndex((item) => {
+    const itemKey = item.localTaskId
+      ? `local:${String(item.localTaskId)}`
+      : item.output?.taskId
+        ? `provider:${item.output.taskId}`
+        : '';
+    return itemKey === taskKey;
+  });
   if (exists >= 0) {
     taskHistory.value.splice(exists, 1, task);
   } else {
@@ -138,11 +149,16 @@ async function handleCreate() {
   creating.value = true;
   try {
     const response = await createOutPaintingTask(payload, createIdempotencyKey.value);
-    queryTaskId.value = response.output?.taskId || '';
-    ElMessage.success(`任务创建成功：${queryTaskId.value || '已受理'}`);
+    queryTaskId.value = response.localTaskId
+      ? String(response.localTaskId)
+      : response.output?.taskId || '';
+    ElMessage.success(`任务创建成功，本地任务 ID：${queryTaskId.value || '已受理'}`);
     if (queryTaskId.value) {
-      await handleQuery(queryTaskId.value);
-      startPolling(queryTaskId.value);
+      try {
+        await handleQuery(queryTaskId.value);
+      } finally {
+        startPolling(queryTaskId.value);
+      }
     }
   } finally {
     creating.value = false;
@@ -158,7 +174,9 @@ async function handleQuery(taskId = queryTaskId.value) {
   try {
     const result = await getOutPaintingTask(taskId);
     upsertTask(result);
-    queryTaskId.value = result.output?.taskId || taskId;
+    queryTaskId.value = result.localTaskId
+      ? String(result.localTaskId)
+      : taskId;
     return result;
   } finally {
     querying.value = false;
@@ -191,10 +209,17 @@ async function handleApplyResult(task = latestTask.value) {
 function startPolling(taskId: string) {
   clearPolling();
   pollTimer = window.setInterval(async () => {
-    const result = await handleQuery(taskId);
-    const status = result?.output?.taskStatus;
-    if (!status || ['SUCCEEDED', 'FAILED', 'SUSPENDED', 'UNKNOWN'].includes(status)) {
-      clearPolling();
+    if (querying.value) {
+      return;
+    }
+    try {
+      const result = await handleQuery(taskId);
+      const status = result?.output?.taskStatus;
+      if (!status || ['SUCCEEDED', 'FAILED', 'TIMED_OUT', 'UNKNOWN', 'RETRYABLE'].includes(status)) {
+        clearPolling();
+      }
+    } catch {
+      // 查询失败时保留轮询，等待下一次网络请求恢复。
     }
   }, 3000);
 }
@@ -208,7 +233,7 @@ onBeforeUnmount(clearPolling);
       <div class="surface-panel-header">
         <div>
           <h3 class="section-title">AI 扩图任务配置</h3>
-          <p class="section-subtitle">按照后端 `/picture/out_painting` 接口创建任务，并支持轮询查看状态与结果。</p>
+          <p class="section-subtitle">创建异步 AI 扩图任务，使用本地任务 ID 查询状态与结果。</p>
         </div>
         <div class="toolbar-actions">
           <el-button type="primary" :loading="creating" @click="handleCreate">创建任务</el-button>
@@ -269,7 +294,7 @@ onBeforeUnmount(clearPolling);
               <div v-if="latestTask" class="task-card">
                 <div class="task-header">
                   <div>
-                    <div class="task-title">最新任务：{{ latestTask.output?.taskId || '--' }}</div>
+                    <div class="task-title">最新任务：{{ latestTask.localTaskId || latestTask.output?.taskId || '--' }}</div>
                     <div class="muted-text">状态：{{ latestTask.output?.taskStatus || '--' }}</div>
                   </div>
                   <el-tag :type="latestStatusType">
@@ -317,7 +342,7 @@ onBeforeUnmount(clearPolling);
             <el-table :data="taskHistory" stripe>
               <el-table-column label="任务 ID" min-width="220">
                 <template #default="scope">
-                  {{ scope.row.output?.taskId || '--' }}
+                  {{ scope.row.localTaskId || scope.row.output?.taskId || '--' }}
                 </template>
               </el-table-column>
               <el-table-column label="状态" width="140">

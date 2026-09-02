@@ -24,6 +24,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 
 @Slf4j
 @Component
@@ -39,6 +40,9 @@ public class WsHandshakeInterceptor implements HandshakeInterceptor {
 
     @Resource
     private SpaceUserAuthManager spaceUserAuthManager;
+
+    @Resource
+    private WebSocketConnectionRegistry connectionRegistry;
 
     @Override
     public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler, Map<String, Object> attributes) throws Exception {
@@ -80,16 +84,31 @@ public class WsHandshakeInterceptor implements HandshakeInterceptor {
                 log.error("用户没有修改图片权限，拒绝握手");
                 return false;
             }
+            String connectionId = UUID.randomUUID().toString();
+            if (!connectionRegistry.tryAcquire(loginUser.getId(), connectionId)) {
+                log.warn("用户 WebSocket 连接数超过限制，userId={}", loginUser.getId());
+                return false;
+            }
+            httpServletRequest.setAttribute("userId", loginUser.getId());
+            httpServletRequest.setAttribute("wsConnectionId", connectionId);
             // 设置用户登录信息等属性到 WebSocket 会话中
             attributes.put("user", loginUser);
             attributes.put("userId", loginUser.getId());
             attributes.put("pictureId", Long.valueOf(pictureId));
+            attributes.put("wsConnectionId", connectionId);
         }
         return true;
     }
 
     @Override
     public void afterHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler, Exception exception) {
-
+        if (exception != null && request instanceof ServletServerHttpRequest) {
+            HttpServletRequest servletRequest = ((ServletServerHttpRequest) request).getServletRequest();
+            Object userId = servletRequest.getAttribute("userId");
+            Object connectionId = servletRequest.getAttribute("wsConnectionId");
+            if (userId instanceof Long && connectionId instanceof String) {
+                connectionRegistry.release((Long) userId, (String) connectionId);
+            }
+        }
     }
 }

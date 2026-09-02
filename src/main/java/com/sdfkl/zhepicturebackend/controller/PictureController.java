@@ -36,6 +36,7 @@ import com.sdfkl.zhepicturebackend.model.enums.PictureReviewStatusEnum;
 import com.sdfkl.zhepicturebackend.model.vo.PictureTagCategory;
 import com.sdfkl.zhepicturebackend.model.vo.PictureVO;
 import com.sdfkl.zhepicturebackend.service.PictureService;
+import com.sdfkl.zhepicturebackend.service.AiTaskApplicationService;
 import com.sdfkl.zhepicturebackend.service.SpaceService;
 import com.sdfkl.zhepicturebackend.service.UserService;
 import lombok.extern.slf4j.Slf4j;
@@ -70,6 +71,9 @@ public class PictureController {
 
     @Resource
     private PictureService pictureService;
+
+    @Resource
+    private AiTaskApplicationService aiTaskApplicationService;
 
     @Resource
     private StringRedisTemplate stringRedisTemplate;
@@ -433,7 +437,7 @@ public class PictureController {
         User loginUser = currentUserService.getRequiredUser();
         log.info("request = {}", JSONUtil.toJsonStr(createPictureOutPaintingTaskRequest));
         log.info("params = {}", JSONUtil.toJsonStr(createPictureOutPaintingTaskRequest.getParameters()));
-        CreateOutPaintingTaskResponse response = pictureService.createOutPaintingTask(createPictureOutPaintingTaskRequest,
+        CreateOutPaintingTaskResponse response = aiTaskApplicationService.createOutPaintingTask(createPictureOutPaintingTaskRequest,
                 loginUser, idempotencyKey);
         return ResultUtils.success(response);
     }
@@ -447,7 +451,8 @@ public class PictureController {
     public BaseResponse<GetOutPaintingTaskResponse> getOutPaintingTask(String taskId) {
         ThrowUtils.throwIf(StrUtil.isBlank(taskId), ErrorCode.PARAMS_ERROR);
         User loginUser = currentUserService.getRequiredUser();
-        GetOutPaintingTaskResponse task = pictureService.getOutPaintingTask(taskId, loginUser);
+        GetOutPaintingTaskResponse task = aiTaskApplicationService
+                .getOutPaintingTaskByProviderTaskId(taskId, loginUser);
         return ResultUtils.success(task);
     }
 }
