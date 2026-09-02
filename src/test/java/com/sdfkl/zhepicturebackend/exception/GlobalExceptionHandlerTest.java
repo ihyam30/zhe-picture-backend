@@ -26,4 +26,14 @@ class GlobalExceptionHandlerTest {
 
         assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
     }
+
+    @Test
+    void shouldMaskUnexpectedExceptionAndReturnServerError() {
+        ResponseEntity<BaseResponse<?>> response = handler.exceptionHandler(
+                new IllegalStateException("database password must not be returned"));
+
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+        assertEquals(ErrorCode.SYSTEM_ERROR.getCode(), response.getBody().getCode());
+        assertEquals("系统错误", response.getBody().getMessage());
+    }
 }

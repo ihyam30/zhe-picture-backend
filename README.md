@@ -434,4 +434,38 @@ SA_TOKEN_COOKIE_SAMESITE=Lax
 
 - **GitHub 主页**：[https://github.com/ihyam30/zhe-picture-backend](https://github.com/sdfkl)
 - **为什么做这个项目**：
-  我希望通过一个完整的全栈项目，把 Java 后端开发中常用的技术栈——Spring Boot、MyBatis-Plus、Redis、权限认证、分库分表、WebSocket、对象存储、AI 接口接入等——串联起来，同时也练习 Vue 3 前端工程化开发。图片管理是一个贴近实际业务、需求清晰、扩展性强的场景，非常适合作为个人技术沉淀与面试展示项目。
+我希望通过一个完整的全栈项目，把 Java 后端开发中常用的技术栈——Spring Boot、MyBatis-Plus、Redis、权限认证、分库分表、WebSocket、对象存储、AI 接口接入等——串联起来，同时也练习 Vue 3 前端工程化开发。图片管理是一个贴近实际业务、需求清晰、扩展性强的场景，非常适合作为个人技术沉淀与面试展示项目。
+
+---
+
+## 十一、工程化与容器部署
+
+### 本地质量检查
+
+```bash
+mvn -B compile
+mvn -B test
+cd frontend
+npm ci
+npm run type-check
+npm run build
+```
+
+带 Docker 的环境会自动执行 MySQL、Redis Testcontainers 集成测试；没有 Docker 时，容器集成测试会跳过，其他测试仍会执行。
+
+### Docker Compose
+
+启动前先设置数据库密码和实际的 COS/AI 配置，再执行：
+
+```bash
+# PowerShell: $env:DB_PASSWORD = 'change-me'
+# Bash: export DB_PASSWORD=change-me
+docker compose up --build
+```
+
+Compose 会启动 MySQL、Redis、Spring Boot 后端和 Nginx 前端，前端访问地址为 `http://localhost:8080`。
+生产环境必须替换示例密码，并通过环境变量提供 `COS_SECRET_ID`、`COS_SECRET_KEY`、`COS_REGION`、`COS_BUCKET`
+和 `ALIYUN_API_KEY`，这些值不要写入 Git。
+
+存活探针为 `/api/livez`，就绪探针为 `/api/readyz`。就绪探针会检查 MySQL、Redis 和 COS；指标可通过
+受保护的 Actuator `/api/actuator/prometheus` 获取。
