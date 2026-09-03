@@ -4,9 +4,8 @@ import org.apache.shardingsphere.sharding.api.sharding.standard.PreciseShardingV
 import org.apache.shardingsphere.sharding.api.sharding.standard.RangeShardingValue;
 import org.apache.shardingsphere.sharding.api.sharding.standard.StandardShardingAlgorithm;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Properties;
+import java.util.ArrayList;
 
 /**
  * 图片分表算法
@@ -31,17 +30,8 @@ public class PictureShardingAlgorithm implements StandardShardingAlgorithm<Long>
     }
 
     @Override
-    public Collection<String> doSharding(Collection<String> collection, RangeShardingValue<Long> rangeShardingValue) {
-        return new ArrayList<>();
-    }
-
-    @Override
-    public Properties getProps() {
-        return null;
-    }
-
-    @Override
-    public void init(Properties properties) {
-
+    public Collection<String> doSharding(Collection<String> availableTargetNames, RangeShardingValue<Long> rangeShardingValue) {
+        // 范围查询无法仅凭上下界确定实际分表，交由 SQL 层在所有可用分表中查询。
+        return new ArrayList<>(availableTargetNames);
     }
 }

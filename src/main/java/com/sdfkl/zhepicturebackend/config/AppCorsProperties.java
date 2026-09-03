@@ -3,7 +3,7 @@ package com.sdfkl.zhepicturebackend.config;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;

@@ -10,7 +10,7 @@ import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 /**
  * Sa-Token 开启注解和配置
@@ -27,6 +27,8 @@ public class SaTokenConfigure implements WebMvcConfigurer {
                     .notMatch(
                             "/user/login",
                             "/health",
+                            "/livez",
+                            "/readyz",
                             "/error",
                             "/doc.html",
                             "/webjars/**",

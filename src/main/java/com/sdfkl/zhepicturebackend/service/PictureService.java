@@ -13,7 +13,7 @@ import com.sdfkl.zhepicturebackend.model.entity.User;
 import com.sdfkl.zhepicturebackend.model.vo.PictureVO;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 
 /**

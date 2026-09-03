@@ -20,7 +20,7 @@ import com.sdfkl.zhepicturebackend.service.SpaceService;
 import com.sdfkl.zhepicturebackend.service.UserService;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;

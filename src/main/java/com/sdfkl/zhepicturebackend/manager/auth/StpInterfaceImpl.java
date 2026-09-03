@@ -6,7 +6,6 @@ import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
-import cn.hutool.extra.servlet.ServletUtil;
 import cn.hutool.http.ContentType;
 import cn.hutool.http.Header;
 import cn.hutool.json.JSONUtil;
@@ -28,8 +27,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletRequest;
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.util.*;
 
 /**
@@ -186,12 +187,12 @@ public class StpInterfaceImpl implements StpInterface {
         SpaceUserAuthContext spaceUserAuthContext;
         // 获取请求参数
         if (contentType != null && contentType.toLowerCase(Locale.ROOT).startsWith(ContentType.JSON.getValue())) {
-            String body = ServletUtil.getBody(request);
+            String body = readRequestBody(request);
             spaceUserAuthContext = StrUtil.isBlank(body)
                     ? new SpaceUserAuthContext()
                     : JSONUtil.toBean(body, SpaceUserAuthContext.class);
         } else {
-            Map<String, String> paramMap = ServletUtil.getParamMap(request);
+            Map<String, String> paramMap = getRequestParamMap(request);
             spaceUserAuthContext = BeanUtil.toBean(paramMap, SpaceUserAuthContext.class);
         }
         // 根据请求路径区分 id 字段含义
@@ -217,6 +218,31 @@ public class StpInterfaceImpl implements StpInterface {
             }
         }
         return spaceUserAuthContext;
+    }
+
+    private String readRequestBody(HttpServletRequest request) {
+        StringBuilder body = new StringBuilder();
+        try {
+            // 不关闭容器管理的 Reader，避免权限校验读取请求体后影响 Controller 的 @RequestBody 解析。
+            BufferedReader reader = request.getReader();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                body.append(line);
+            }
+        } catch (IOException e) {
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "读取请求体失败");
+        }
+        return body.toString();
+    }
+
+    private Map<String, String> getRequestParamMap(HttpServletRequest request) {
+        Map<String, String> params = new HashMap<>();
+        Enumeration<String> parameterNames = request.getParameterNames();
+        while (parameterNames.hasMoreElements()) {
+            String parameterName = parameterNames.nextElement();
+            params.put(parameterName, request.getParameter(parameterName));
+        }
+        return params;
     }
 
     private boolean isPublicPictureUploadRequest() {

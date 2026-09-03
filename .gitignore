@@ -9,6 +9,7 @@ application-local.yml
 *.p12
 *.jks
 .aider*
+frontend/.npm-cache/
 
 HELP.md
 target/

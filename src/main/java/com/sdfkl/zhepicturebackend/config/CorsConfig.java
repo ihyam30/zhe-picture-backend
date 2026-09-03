@@ -4,7 +4,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 /**
  * 全局跨域配置
@@ -24,7 +24,7 @@ public class CorsConfig implements WebMvcConfigurer {
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
                 .allowedHeaders("Accept", "Content-Type", "Authorization", "Origin", "X-Requested-With",
                         "Idempotency-Key")
-                .exposedHeaders("Content-Disposition")
+                .exposedHeaders("Content-Disposition", "X-Request-ID", "X-Trace-ID")
                 .maxAge(3600);
     }
 }

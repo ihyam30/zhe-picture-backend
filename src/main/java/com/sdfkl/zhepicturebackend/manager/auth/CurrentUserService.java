@@ -6,7 +6,7 @@ import com.sdfkl.zhepicturebackend.mapper.UserMapper;
 import com.sdfkl.zhepicturebackend.model.entity.User;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 /**
  * Unified access to the authenticated user.
