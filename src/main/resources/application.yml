@@ -124,7 +124,7 @@ spring:
   application:
     name: zhe-picture-backend
   mvc:
-    # Knife4j/Springfox 4.x 与 Spring Boot 2.6 默认 PathPatternParser 不兼容。
+    # Spring Boot 3 使用 Jakarta Servlet，Knife4j 通过 OpenAPI 3 提供接口文档。
     pathmatch:
       matching-strategy: ant_path_matcher
   # 数据库配置

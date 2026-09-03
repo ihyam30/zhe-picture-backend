@@ -14,7 +14,7 @@ import com.sdfkl.zhepicturebackend.model.dto.file.UploadPictureResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;

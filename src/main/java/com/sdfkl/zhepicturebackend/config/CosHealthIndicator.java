@@ -7,7 +7,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 /**
  * 通过 COS bucket HEAD 检查对象存储连通性，不在健康详情中暴露 bucket 或凭证信息。

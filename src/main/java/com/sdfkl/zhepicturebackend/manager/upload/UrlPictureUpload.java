@@ -8,7 +8,7 @@ import com.sdfkl.zhepicturebackend.exception.ThrowUtils;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 @Service
 public class UrlPictureUpload extends PictureUploadTemplate {

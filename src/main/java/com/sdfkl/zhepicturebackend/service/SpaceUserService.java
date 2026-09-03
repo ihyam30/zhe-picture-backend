@@ -7,7 +7,7 @@ import com.sdfkl.zhepicturebackend.model.dto.spaceuser.SpaceUserQueryRequest;
 import com.sdfkl.zhepicturebackend.model.entity.SpaceUser;
 import com.sdfkl.zhepicturebackend.model.vo.SpaceUserVO;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 
 /**

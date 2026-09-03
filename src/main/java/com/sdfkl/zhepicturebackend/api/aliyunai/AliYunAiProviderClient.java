@@ -7,7 +7,7 @@ import com.sdfkl.zhepicturebackend.api.aliyunai.model.GetOutPaintingTaskResponse
 import com.sdfkl.zhepicturebackend.model.entity.User;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 /**
  * 阿里云 AI 供应商适配器。

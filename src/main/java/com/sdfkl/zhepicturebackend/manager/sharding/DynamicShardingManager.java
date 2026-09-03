@@ -8,15 +8,15 @@ import com.sdfkl.zhepicturebackend.model.enums.SpaceTypeEnum;
 import com.sdfkl.zhepicturebackend.service.SpaceService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shardingsphere.driver.jdbc.core.connection.ShardingSphereConnection;
-import org.apache.shardingsphere.infra.metadata.database.rule.ShardingSphereRuleMetaData;
+import org.apache.shardingsphere.infra.metadata.database.rule.RuleMetaData;
 import org.apache.shardingsphere.mode.manager.ContextManager;
 import org.apache.shardingsphere.sharding.api.config.ShardingRuleConfiguration;
 import org.apache.shardingsphere.sharding.api.config.rule.ShardingTableRuleConfiguration;
 import org.apache.shardingsphere.sharding.rule.ShardingRule;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Resource;
 import javax.sql.DataSource;
 import java.sql.SQLException;
 import java.util.*;
@@ -72,11 +72,10 @@ public class DynamicShardingManager {
         log.info("动态分表 actual-data-nodes 配置: {}", newActualDataNodes);
 
         ContextManager contextManager = getContextManager();
-        ShardingSphereRuleMetaData ruleMetaData = contextManager.getMetaDataContexts()
+        var database = contextManager.getMetaDataContexts()
                 .getMetaData()
-                .getDatabases()
-                .get(DATABASE_NAME)
-                .getRuleMetaData();
+                .getDatabase(DATABASE_NAME);
+        RuleMetaData ruleMetaData = database.getRuleMetaData();
 
         Optional<ShardingRule> shardingRule = ruleMetaData.findSingleRule(ShardingRule.class);
         if (shardingRule.isPresent()) {
@@ -96,8 +95,14 @@ public class DynamicShardingManager {
                     })
                     .collect(Collectors.toList());
             ruleConfig.setTables(updatedRules);
-            contextManager.alterRuleConfiguration(DATABASE_NAME, Collections.singleton(ruleConfig));
-            contextManager.reloadDatabase(DATABASE_NAME);
+            try {
+                contextManager.getMetaDataContextManager()
+                        .getDatabaseRuleConfigurationManager()
+                        .refresh(DATABASE_NAME, ruleConfig, false);
+                contextManager.reloadDatabase(database);
+            } catch (SQLException e) {
+                throw new IllegalStateException("刷新 ShardingSphere 分片规则失败", e);
+            }
             log.info("动态分表规则更新成功！");
         } else {
             log.error("未找到 ShardingSphere 的分片规则配置，动态分表更新失败。");

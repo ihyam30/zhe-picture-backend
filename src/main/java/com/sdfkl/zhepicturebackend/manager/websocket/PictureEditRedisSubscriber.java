@@ -10,9 +10,9 @@ import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import javax.annotation.Resource;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
+import jakarta.annotation.Resource;
 
 /**
  * 接收其他实例发布的图片编辑事件，并交给本实例的会话集合广播。

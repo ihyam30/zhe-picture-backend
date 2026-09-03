@@ -11,7 +11,7 @@ import com.sdfkl.zhepicturebackend.model.entity.User;
 import com.sdfkl.zhepicturebackend.model.vo.SpaceVO;
 
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * @author user

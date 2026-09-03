@@ -46,10 +46,10 @@
 
 ### 后端
 
-- **框架**：Spring Boot 2.6.13
-- **JDK**：Java 8
+- **框架**：Spring Boot 3.5.12
+- **JDK**：Java 17
 - **持久层**：MyBatis-Plus 3.5.9、MySQL 8、Flyway
-- **数据库中间件**：ShardingSphere-JDBC 5.2.0（图片表按 `spaceId` 分表）
+- **数据库中间件**：ShardingSphere-JDBC 5.5.3（图片表按 `spaceId` 分表）
 - **缓存**：Redis + Caffeine 本地缓存
 - **认证鉴权**：Sa-Token 1.45.0 + Redis
 - **对象存储**：腾讯云 COS
